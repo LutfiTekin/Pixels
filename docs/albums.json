@@ -86,5 +86,31 @@
             "money_money_money",
             "dunyanin_en_guzel_kizi"
         ]
-    }
+    },
+    "mixcities": {
+    "title": "Mixed City Cards",
+    "description": "Mixed city card images in various styles",
+    "images": [
+      "c2817610925600f2",
+      "665c3890cd451c18",
+      "fce5a1af60f266ae",
+      "6ca4e1ec2e0e24b4",
+      "9816bea910c840ea",
+      "1637a82bc3e22e11",
+      "f12d418612b813c3",
+      "066705f8c1b7fe29",
+      "79e654efcca67878",
+      "a499b2aa28b66a3d",
+      "3e095b1c228812e3",
+      "93df21da43038484",
+      "1fb5e1822d72075c",
+      "8a90272a83acc8b6",
+      "b30c8734d38b37f6",
+      "b4cf98d9c464b949",
+      "573190dac1db32bd",
+      "86ec4abdf82f2999",
+      "d1c7596eadbe3a28",
+      "ef446d906c03ff9b"
+    ]
+  }
 }
