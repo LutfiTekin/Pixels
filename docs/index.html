@@ -108,10 +108,12 @@
       modalImage.src = imgUrl;
       modalTitle.textContent = meta.title || '';
       modalDesc.textContent = meta.description || '';
+
+      const safeTitle = (meta.title || id).replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
       downloadBtn.onclick = () => {
         const a = document.createElement('a');
         a.href = imgUrl;
-        a.download = id + '.png';
+        a.download = safeTitle + '.png';
         a.click();
       };
 
