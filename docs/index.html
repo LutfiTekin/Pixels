@@ -43,7 +43,7 @@
   <script>
     const qs = new URLSearchParams(location.search);
     const albumId = qs.get('album');
-    const selectedId = qs.get('selected');
+    const selectedId = qs.get('image');
     const galleryEl = document.getElementById('gallery');
     const errorEl = document.getElementById('error');
     const gridEl = document.getElementById('grid');
@@ -118,7 +118,7 @@
       };
 
       modal.style.display = 'flex';
-      history.replaceState(null, '', `?album=${albumId}&selected=${id}`);
+      history.replaceState(null, '', `?album=${albumId}&image=${id}`);
     }
 
     function navigate(offset) {
