@@ -74,6 +74,7 @@
         albumData = albums[albumId];
         imageMeta = metadata;
         renderGallery(albumData.images, albumData.title || '', albumData.description || '');
+        document.title = albumData.title || 'Gallery';
         galleryEl.classList.remove('hidden');
 
         if (selectedId) {
@@ -106,8 +107,8 @@
       const imgUrl = `images/${albumId}/${id}.png`;
 
       modalImage.src = imgUrl;
-      modalTitle.textContent = meta.title || '';
-      modalDesc.textContent = meta.description || '';
+      modalTitl
+      modalDesc.textContent = meta.description ? meta.description : '';
 
       const safeTitle = (meta.title || id).replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
       downloadBtn.onclick = () => {
