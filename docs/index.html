@@ -136,11 +136,31 @@
       document.title = albumData.title || 'Gallery'; };
 
     document.addEventListener('keydown', e => {
-      if (!modal.style.display.includes('flex')) return;
-      if (e.key === 'ArrowLeft') navigate(-1);
-      if (e.key === 'ArrowRight') navigate(1);
-      if (e.key === 'Escape') modal.style.display = 'none';
-    });
+  if (!modal.style.display.includes('flex')) return;
+  if (e.key === 'ArrowLeft') navigate(-1);
+  if (e.key === 'ArrowRight') navigate(1);
+  if (e.key === 'Escape') {
+    modal.style.display = 'none';
+    document.title = albumData.title || 'Gallery';
+    history.replaceState(null, '', `?album=${albumId}`);
+  }
+});
+
+// Touch swipe support
+let touchStartX = 0;
+modal.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    touchStartX = e.touches[0].clientX;
+  }
+});
+
+modal.addEventListener('touchend', e => {
+  const deltaX = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(deltaX) > 50) {
+    if (deltaX > 0) navigate(-1); // swipe right → previous
+    else navigate(1); // swipe left → next
+  }
+});
 
     init();
   </script>
