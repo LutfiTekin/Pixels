@@ -54,6 +54,7 @@
     const downloadBtn = document.getElementById('downloadBtn');
 
     let albumData = null;
+let albumDataId = null;
     let imageMeta = {};
     let currentIndex = -1;
 
@@ -88,6 +89,7 @@
         }
 
         albumData = albums[targetAlbumId];
+        albumDataId = targetAlbumId;
         renderGallery(albumData.images, albumData.title || '', albumData.description || '');
         document.title = albumData.title || 'Gallery';
         galleryEl.classList.remove('hidden');
@@ -106,7 +108,7 @@
       document.getElementById('albumTitle').textContent = title;
       gridEl.innerHTML = '';
       ids.forEach((id, idx) => {
-        const url = `images/${albumData.title.toLowerCase().replace(/\s+/g, '')}/${id}.png`;
+        const url = `images/${albumDataId}/${id}.png`;
         const img = document.createElement('img');
         img.src = url;
         img.alt = imageMeta[id]?.title || '';
@@ -119,7 +121,7 @@
       currentIndex = index;
       const id = albumData.images[index];
       const meta = imageMeta[id] || {};
-      const imgUrl = `images/${albumData.title.toLowerCase().replace(/\s+/g, '')}/${id}.png`;
+      const imgUrl = `images/${albumDataId}/${id}.png`;
 
       modalImage.src = imgUrl;
       modalTitle.textContent = meta.title || '';
@@ -144,7 +146,7 @@
 };
 
       modal.style.display = 'flex';
-      history.replaceState(null, '', `?album=${albumData.title.toLowerCase().replace(/\s+/g, '')}&image=${id}`);
+      history.replaceState(null, '', `?album=${albumDataId}&image=${id}`);
     }
 
     function navigate(offset) {
@@ -160,7 +162,7 @@
       if (e.target === modal) {
         modal.style.display = 'none';
         document.title = albumData.title || 'Gallery';
-        history.replaceState(null, '', `?album=${albumData.title.toLowerCase().replace(/\s+/g, '')}`);
+        history.replaceState(null, '', `?album=${albumDataId}`);
       }
     };
 
@@ -171,7 +173,7 @@
       if (e.key === 'Escape') {
         modal.style.display = 'none';
         document.title = albumData.title || 'Gallery';
-        history.replaceState(null, '', `?album=${albumData.title.toLowerCase().replace(/\s+/g, '')}`);
+        history.replaceState(null, '', `?album=${albumDataId}`);
       }
     });
 
