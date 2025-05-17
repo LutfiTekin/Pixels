@@ -64,15 +64,30 @@
     }
 
     async function init() {
-      if (!albumId) return errorEl.classList.remove('hidden');
-
       try {
         const albums = await loadJSON('albums.json');
         const metadata = await loadJSON('images.json');
-        if (!albums[albumId]) return errorEl.classList.remove('hidden');
-
-        albumData = albums[albumId];
         imageMeta = metadata;
+
+        let targetAlbumId = albumId;
+        let imageOnly = false;
+
+        if (!targetAlbumId && selectedId) {
+          for (const [key, value] of Object.entries(albums)) {
+            if (value.images.includes(selectedId)) {
+              targetAlbumId = key;
+              imageOnly = true;
+              break;
+            }
+          }
+        }
+
+        if (!targetAlbumId || !albums[targetAlbumId]) {
+          errorEl.classList.remove('hidden');
+          return;
+        }
+
+        albumData = albums[targetAlbumId];
         renderGallery(albumData.images, albumData.title || '', albumData.description || '');
         document.title = albumData.title || 'Gallery';
         galleryEl.classList.remove('hidden');
@@ -91,7 +106,7 @@
       document.getElementById('albumTitle').textContent = title;
       gridEl.innerHTML = '';
       ids.forEach((id, idx) => {
-        const url = `images/${albumId}/${id}.png`;
+        const url = `images/${albumData.title.toLowerCase().replace(/\s+/g, '')}/${id}.png`;
         const img = document.createElement('img');
         img.src = url;
         img.alt = imageMeta[id]?.title || '';
@@ -104,7 +119,7 @@
       currentIndex = index;
       const id = albumData.images[index];
       const meta = imageMeta[id] || {};
-      const imgUrl = `images/${albumId}/${id}.png`;
+      const imgUrl = `images/${albumData.title.toLowerCase().replace(/\s+/g, '')}/${id}.png`;
 
       modalImage.src = imgUrl;
       modalTitle.textContent = meta.title || '';
@@ -120,7 +135,7 @@
       };
 
       modal.style.display = 'flex';
-      history.replaceState(null, '', `?album=${albumId}&image=${id}`);
+      history.replaceState(null, '', `?album=${albumData.title.toLowerCase().replace(/\s+/g, '')}&image=${id}`);
     }
 
     function navigate(offset) {
@@ -132,35 +147,40 @@
 
     document.getElementById('prevBtn').onclick = () => navigate(-1);
     document.getElementById('nextBtn').onclick = () => navigate(1);
-    modal.onclick = e => { if (e.target === modal) modal.style.display = 'none';
-      document.title = albumData.title || 'Gallery'; };
+    modal.onclick = e => {
+      if (e.target === modal) {
+        modal.style.display = 'none';
+        document.title = albumData.title || 'Gallery';
+        history.replaceState(null, '', `?album=${albumData.title.toLowerCase().replace(/\s+/g, '')}`);
+      }
+    };
 
     document.addEventListener('keydown', e => {
-  if (!modal.style.display.includes('flex')) return;
-  if (e.key === 'ArrowLeft') navigate(-1);
-  if (e.key === 'ArrowRight') navigate(1);
-  if (e.key === 'Escape') {
-    modal.style.display = 'none';
-    document.title = albumData.title || 'Gallery';
-    history.replaceState(null, '', `?album=${albumId}`);
-  }
-});
+      if (!modal.style.display.includes('flex')) return;
+      if (e.key === 'ArrowLeft') navigate(-1);
+      if (e.key === 'ArrowRight') navigate(1);
+      if (e.key === 'Escape') {
+        modal.style.display = 'none';
+        document.title = albumData.title || 'Gallery';
+        history.replaceState(null, '', `?album=${albumData.title.toLowerCase().replace(/\s+/g, '')}`);
+      }
+    });
 
-// Touch swipe support
-let touchStartX = 0;
-modal.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) {
-    touchStartX = e.touches[0].clientX;
-  }
-});
+    // Touch swipe support
+    let touchStartX = 0;
+    modal.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+      }
+    });
 
-modal.addEventListener('touchend', e => {
-  const deltaX = e.changedTouches[0].clientX - touchStartX;
-  if (Math.abs(deltaX) > 50) {
-    if (deltaX > 0) navigate(-1); // swipe right → previous
-    else navigate(1); // swipe left → next
-  }
-});
+    modal.addEventListener('touchend', e => {
+      const deltaX = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(deltaX) > 50) {
+        if (deltaX > 0) navigate(-1);
+        else navigate(1);
+      }
+    });
 
     init();
   </script>
