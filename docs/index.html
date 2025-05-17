@@ -128,11 +128,20 @@
 
       const safeTitle = (meta.title || id).replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
       downloadBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = imgUrl;
-        a.download = safeTitle + '.png';
-        a.click();
-      };
+  const a = document.createElement('a');
+  a.href = imgUrl;
+  a.download = safeTitle + '.png';
+  a.click();
+
+  if (navigator.share) {
+    const shareUrl = `${location.origin}${location.pathname}?image=${id}`;
+    navigator.share({
+      title: meta.title || 'Image',
+      text: meta.description || '',
+      url: shareUrl
+    }).catch(err => console.log('Share cancelled or failed:', err));
+  }
+};
 
       modal.style.display = 'flex';
       history.replaceState(null, '', `?album=${albumData.title.toLowerCase().replace(/\s+/g, '')}&image=${id}`);
