@@ -1,62 +1,47 @@
 #!/bin/bash
 
-# Check if jq is installed
+# Ensure jq is available
 if ! command -v jq &> /dev/null; then
-  echo "jq is not installed. Attempting to install..."
-
-  if [ -f /etc/debian_version ]; then
-    sudo apt update && sudo apt install -y jq
-  elif [ -f /etc/redhat-release ]; then
-    sudo yum install -y epel-release && sudo yum install -y jq
-  elif [ -f /etc/arch-release ]; then
-    sudo pacman -Sy --noconfirm jq
-  elif command -v brew &> /dev/null; then
-    brew install jq
-  else
-    echo "Unsupported OS. Please install 'jq' manually."
-    exit 1
-  fi
-
-  if ! command -v jq &> /dev/null; then
-    echo "jq installation failed. Exiting."
-    exit 1
-  fi
+  echo "jq is required but not installed. Please install it first."
+  exit 1
 fi
 
-# Ask for album metadata
+# Prompt for album details
 read -p "Album ID: " album_id
 read -p "Album Title: " album_title
 read -p "Album Description: " album_description
 
-# Subfolder for images
 mkdir -p "$album_id"
-
-# Run the scrambling script
 ./scramble_images.sh
 
-# Init output JSON strings
 images_json="{}"
 album_images=()
 
-# Process renamed files
-while read -r line; do
-  filename="${line##*/}"
-  id="${filename%.*}"
-  orig_name=$(basename "$(grep "$filename" renamed_images.txt | cut -d'>' -f1)" | sed 's/\.[^.]*$//')
-  title="${orig_name//_/ }"
+# Read and process each line from renamed_images.txt
+while IFS='>' read -r original new; do
+  # Handle raw filename format fallback (no '>'):
+  if [[ -z "$new" ]]; then
+    new=$(echo "$original" | xargs)
+    id="${new%.*}"
+    title="$id"
+  else
+    original=$(echo "$original" | xargs)
+    new=$(echo "$new" | xargs)
+    id="${new%.*}"
+    title=$(basename "$original" | sed 's/\.[^.]*$//' | sed 's/_/ /g')
+  fi
 
-  # Append to image JSON
-  images_json=$(jq --arg id "$id" --arg title "$title" \
-    '. + {($id): {title: $title}}' <<< "$images_json")
-
-  # Add ID to album image list
+  images_json=$(jq --arg id "$id" --arg title "$title" '. + {($id): {title: $title}}' <<< "$images_json")
   album_images+=("\"$id\"")
 
-  # Move image to album folder
-  mv "$filename" "$album_id/"
+  if [[ -f "$new" ]]; then
+    mv "$new" "$album_id/"
+  else
+    echo "Warning: $new not found for moving."
+  fi
 done < renamed_images.txt
 
-# Build albums JSON
+# Build album JSON
 albums_json=$(jq -n \
   --arg id "$album_id" \
   --arg title "$album_title" \
@@ -65,8 +50,7 @@ albums_json=$(jq -n \
   '{($id): {title: $title, description: $desc, images: $images}}'
 )
 
-# Write output
 echo "$images_json" > new_images.json
 echo "$albums_json" > new_albums.json
 
-echo "Done. JSON written to new_images.json and new_albums.json"
+echo "Done. Written to new_images.json and new_albums.json."
