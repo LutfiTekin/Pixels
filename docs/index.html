@@ -90,7 +90,11 @@ let albumDataId = null;
 
         albumData = albums[targetAlbumId];
         albumDataId = targetAlbumId;
-        renderGallery(albumData.images, albumData.title || '', albumData.description || '');
+        if (imageOnly) {
+          renderGallery([selectedId], albumData.title || '', albumData.description || '');
+        } else {
+          renderGallery(albumData.images, albumData.title || '', albumData.description || '');
+        }
         document.title = albumData.title || 'Gallery';
         galleryEl.classList.remove('hidden');
 
