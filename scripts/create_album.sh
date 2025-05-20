@@ -11,7 +11,8 @@ read -p "Album ID: " album_id
 read -p "Album Title: " album_title
 read -p "Album Description: " album_description
 
-mkdir -p "$album_id"
+album_dir="docs/images/$album_id"
+mkdir -p "$album_dir"
 ./scramble_images.sh
 
 images_json="{}"
@@ -35,7 +36,7 @@ while IFS='>' read -r original new; do
   album_images+=("\"$id\"")
 
   if [[ -f "$new" ]]; then
-    mv "$new" "$album_id/"
+    mv "$new" "$album_dir/"
   else
     echo "Warning: $new not found for moving."
   fi
@@ -43,14 +44,13 @@ done < renamed_images.txt
 
 # Build album JSON
 albums_json=$(jq -n \
-  --arg id "$album_id" \
   --arg title "$album_title" \
   --arg desc "$album_description" \
   --argjson images "$(printf "[%s]" "$(IFS=,; echo "${album_images[*]}")")" \
-  '{($id): {title: $title, description: $desc, images: $images}}'
+  '{title: $title, description: $desc, images: $images}'
 )
 
-echo "$images_json" > new_images.json
-echo "$albums_json" > new_albums.json
+echo "$images_json" > "$album_dir/images.json"
+echo "$albums_json" > "$album_dir/album.json"
 
-echo "Done. Written to new_images.json and new_albums.json."
+echo "Done. Written to $album_dir/album.json and images.json."
