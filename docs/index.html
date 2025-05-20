@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Image Gallery v0.0.2</title>
+  <title>Image Gallery</title>
   <style>
     body {
       font-family: sans-serif;
@@ -115,81 +115,104 @@
     let imageMeta = {};
     let currentIndex = -1;
 
+    // Helper function to load JSON data from a given URL
     async function loadJSON(url) {
       const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to load ' + url);
       return res.json();
     }
 
+    // Initialization function to set up the gallery
     async function init() {
       try {
         let targetAlbumId = albumId;
         let imageOnly = false;
 
+        // If no album is specified but an image is, try to find the album it belongs to.
+        // This assumes a global 'albums' object is available, or you'd need to load a master album list.
         if (!targetAlbumId && selectedId) {
-          // Assuming 'albums' is available globally - you might need to fetch this as well
-          for (const [key, value] of Object.entries(albums)) {
-            if (value.images.includes(selectedId)) {
-              targetAlbumId = key;
-              imageOnly = true;
-              break;
+          // This part assumes 'albums' is a global object where keys are album IDs
+          // and values have an 'images' array. Adjust if your 'albums' structure is different.
+          if (typeof albums !== 'undefined') { // Check if 'albums' global variable exists
+            for (const [key, value] of Object.entries(albums)) {
+              if (value && value.images && value.images.includes(selectedId)) {
+                targetAlbumId = key;
+                imageOnly = true;
+                break;
+              }
             }
           }
         }
 
+        // If no album ID is found, display an error and exit.
         if (!targetAlbumId) {
           errorEl.classList.remove('hidden');
           return;
         }
 
+        // Load album data and image metadata for the target album.
         albumData = await loadJSON(`albums/${targetAlbumId}/album.json`);
         albumDataId = targetAlbumId;
         const metadata = await loadJSON(`albums/${targetAlbumId}/images.json`);
-        imageMeta = metadata;
+        imageMeta = metadata; // Store the image metadata for later use
 
-
+        // Render the gallery based on whether a specific image was selected or the whole album.
         if (imageOnly) {
           renderGallery([selectedId], albumData.title || '', albumData.description || '');
         } else {
           renderGallery(albumData.images, albumData.title || '', albumData.description || '');
         }
+
+        // Set the document title and show the gallery.
         document.title = albumData.title || 'Gallery';
         galleryEl.classList.remove('hidden');
 
+        // If a specific image was selected, open its modal.
         if (selectedId) {
           const index = albumData.images.indexOf(selectedId);
           if (index !== -1) openModal(index);
         }
       } catch (e) {
-        console.error(e);
+        // Log any errors and display the error message.
+        console.error("Error initializing gallery:", e);
         errorEl.classList.remove('hidden');
       }
     }
 
+    // Function to render the gallery grid
     function renderGallery(ids, title, desc) {
+      // Set the album title and description.
       document.getElementById('albumTitle').innerHTML = `<div>${title}</div><div style="font-size: 1rem; color: #aaa;">${desc}</div>`;
-      gridEl.innerHTML = '';
+      gridEl.innerHTML = ''; // Clear existing grid items
+
+      // Create and append image elements to the grid.
       ids.forEach((id, idx) => {
         const url = `images/${albumDataId}/${id}.png`;
         const img = document.createElement('img');
         img.src = url;
-        img.alt = imageMeta[id]?.title || '';
-        img.onclick = () => openModal(idx);
+        // Set alt text from image metadata, falling back to empty string if not found.
+        img.alt = imageMeta[id]?.title || ''; 
+        img.onclick = () => openModal(idx); // Open modal on click
         gridEl.appendChild(img);
       });
     }
 
+    // Function to open the image modal
     function openModal(index) {
       currentIndex = index;
       const id = albumData.images[index];
-      const meta = imageMeta[id] || {};
+      // Get image metadata, defaulting to an empty object if not found.
+      const meta = imageMeta[id] || {}; 
       const imgUrl = `images/${albumDataId}/${id}.png`;
 
       modalImage.src = imgUrl;
-      modalTitle.textContent = meta.title || '';
+      // Set the modal title from the image metadata's title field.
+      // This is the crucial line for displaying the title from images.json.
+      modalTitle.textContent = meta.title || ''; 
       document.title = `${meta.title || id} - ${albumData?.title || 'Gallery'}`;
       modalDesc.textContent = meta.description ? meta.description : '';
 
+      // Prepare for download and share functionality
       const safeTitle = (meta.title || id).replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
       downloadBtn.onclick = () => {
         const a = document.createElement('a');
@@ -197,20 +220,23 @@
         a.download = safeTitle + '.png';
         a.click();
 
+        // Attempt to use Web Share API if available
         if (navigator.share) {
           const shareUrl = `${location.origin}${location.pathname}?image=${id}`;
           navigator.share({
-            title: meta.title || 'Image',
+            title: meta.title || 'Image', // Use meta.title for share title
             text: meta.description || '',
             url: shareUrl
           }).catch(err => console.log('Share cancelled or failed:', err));
         }
       };
 
-      modal.style.display = 'flex';
+      modal.style.display = 'flex'; // Show the modal
+      // Update URL history to reflect the currently viewed image
       history.replaceState(null, '', `?album=${albumDataId}&image=${id}`);
     }
 
+    // Function to navigate between images in the modal
     function navigate(offset) {
       const newIndex = currentIndex + offset;
       if (newIndex >= 0 && newIndex < albumData.images.length) {
@@ -218,8 +244,11 @@
       }
     }
 
+    // Event listeners for modal navigation buttons
     document.getElementById('prevBtn').onclick = () => navigate(-1);
     document.getElementById('nextBtn').onclick = () => navigate(1);
+
+    // Close modal when clicking outside the image content
     modal.onclick = e => {
       if (e.target === modal) {
         modal.style.display = 'none';
@@ -228,8 +257,9 @@
       }
     };
 
+    // Keyboard navigation for modal
     document.addEventListener('keydown', e => {
-      if (!modal.style.display.includes('flex')) return;
+      if (!modal.style.display.includes('flex')) return; // Only active when modal is open
       if (e.key === 'ArrowLeft') navigate(-1);
       if (e.key === 'ArrowRight') navigate(1);
       if (e.key === 'Escape') {
@@ -239,7 +269,7 @@
       }
     });
 
-    // Touch swipe support
+    // Touch swipe support for modal navigation
     let touchStartX = 0;
     modal.addEventListener('touchstart', e => {
       if (e.touches.length === 1) {
@@ -249,12 +279,13 @@
 
     modal.addEventListener('touchend', e => {
       const deltaX = e.changedTouches[0].clientX - touchStartX;
-      if (Math.abs(deltaX) > 50) {
-        if (deltaX > 0) navigate(-1);
-        else navigate(1);
+      if (Math.abs(deltaX) > 50) { // Threshold for a significant swipe
+        if (deltaX > 0) navigate(-1); // Swipe right for previous
+        else navigate(1); // Swipe left for next
       }
     });
 
+    // Initialize the gallery when the script loads
     init();
   </script>
 </body>
