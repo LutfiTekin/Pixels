@@ -65,6 +65,8 @@ let albumDataId = null;
     }
 
     async function init() {
+      let targetAlbumId = albumId;
+      let imageOnly = false;
       try {
         
         const metadata = await loadJSON(`albums/${targetAlbumId}/images.json`);
