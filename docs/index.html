@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Image Gallery</title>
+  <title>Gallery</title>
   <style>
     body { font-family: sans-serif; margin: 0; background: #111; color: #fff; }
     .container { padding: 1rem; max-width: 1000px; margin: auto; }
@@ -65,10 +65,11 @@ let albumDataId = null;
     }
 
     async function init() {
-      let targetAlbumId = albumId;
+      let targetAlbumId;
       let imageOnly = false;
       try {
         
+        if (!targetAlbumId) targetAlbumId = albumId;
         const metadata = await loadJSON(`albums/${targetAlbumId}/images.json`);
         imageMeta = metadata;
 
