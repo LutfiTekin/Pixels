@@ -66,8 +66,8 @@ let albumDataId = null;
 
     async function init() {
       try {
-        const albums = await loadJSON('albums.json');
-        const metadata = await loadJSON('images.json');
+        
+        const metadata = await loadJSON(`albums/${targetAlbumId}/images.json`);
         imageMeta = metadata;
 
         let targetAlbumId = albumId;
@@ -83,12 +83,12 @@ let albumDataId = null;
           }
         }
 
-        if (!targetAlbumId || !albums[targetAlbumId]) {
+        if (!targetAlbumId) {
           errorEl.classList.remove('hidden');
           return;
         }
 
-        albumData = albums[targetAlbumId];
+        albumData = await loadJSON(`albums/${targetAlbumId}/album.json`);
         albumDataId = targetAlbumId;
         if (imageOnly) {
           renderGallery([selectedId], albumData.title || '', albumData.description || '');
