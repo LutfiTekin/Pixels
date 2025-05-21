@@ -7,36 +7,38 @@
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="icon-192x192.png">
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#111">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
 </head>
 <body>
-    <header>
-        <h1>Image Gallery</h1>
-        <div class="controls">
-            <button id="theme-toggle">Dark Mode</button>
-            <input type="color" id="color-picker" value="#4CAF50">
-            <select id="layout-selector">
-                <option value="grid">Grid</option>
-                <option value="list">List</option>
-                <option value="slideshow">Slideshow</option>
-            </select>
-        </div>
-        <div class="search-filter">
-            <input type="search" id="search-input" placeholder="Search images...">
-            <select id="filter-tags">
-                <option value="">All Tags</option>
-            </select>
-            <select id="sort-options">
-                <option value="name-asc">Name (A-Z)</option>
-                <option value="name-desc">Name (Z-A)</option>
-                <option value="random">Random</option>
-            </select>
-            <button id="favorites-toggle">Show Favorites</button>
-        </div>
-    </header>
-    <main id="gallery-container"></main>
-    <div id="lightbox-container"></div>
+    <div class="container">
+        <header>
+            <h1>Image Gallery</h1>
+            <div class="controls">
+                <button id="theme-toggle">Light Mode</button>
+                <input type="color" id="color-picker" value="#4CAF50">
+                <select id="layout-selector">
+                    <option value="grid">Grid</option>
+                    <option value="list">List</option>
+                    <option value="slideshow">Slideshow</option>
+                </select>
+            </div>
+            <div class="search-filter">
+                <input type="search" id="search-input" placeholder="Search images...">
+                <select id="filter-tags">
+                    <option value="">All Tags</option>
+                </select>
+                <select id="sort-options">
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                    <option value="random">Random</option>
+                </select>
+                <button id="favorites-toggle">Show Favorites</button>
+            </div>
+        </header>
+        <main id="gallery-container" class="gallery"></main>
+        <div id="lightbox-container"></div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
     <script src="main.js"></script>

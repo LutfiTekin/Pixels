@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const updateTheme = (theme) => {
         document.body.classList.toggle('dark-mode', theme === 'dark');
         localStorage.setItem('theme', theme);
+        themeToggle.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
     };
 
     const updateColor = (color) => {
@@ -140,8 +141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const details = imagesData[imageId];
             if (!details) return;
 
-            const imageUrl = `albums/${albumId}/${imageId}${imageId.endsWith('.jpg') ? '.jpg' : '.png'}`;
-            const thumbUrl = `albums/${albumId}/lowres/${imageId}${imageId.endsWith('.jpg') ? '.jpg' : '.png'}`;
+            const imageUrl = `albums/${albumId}/${imageId}.png`;
+            const thumbUrl = `albums/${albumId}/lowres/${imageId}.png`;
 
             const galleryItem = document.createElement('div');
             galleryItem.classList.add('gallery-item');
@@ -206,7 +207,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        const imageUrl = `albums/${foundAlbumId}/${imageId}${imageId.endsWith('.jpg') ? '.jpg' : '.png'}`;
+        const imageUrl = `albums/${foundAlbumId}/${imageId}.png`;
         const details = imageDetails[foundAlbumId][imageId];
 
         initLightbox([{
@@ -271,7 +272,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             renderGallery(albumParam);
             if (imageParam && imageDetails[albumParam]?.[imageParam]) {
-                const imageUrl = `albums/${albumParam}/${imageParam}${imageParam.endsWith('.jpg') ? '.jpg' : '.png'}`;
+                const imageUrl = `albums/${albumParam}/${imageParam}.png`;
                 const details = imageDetails[albumParam][imageParam];
                 initLightbox([{
                     href: imageUrl,
@@ -282,29 +283,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         } else if (imageParam) {
             let foundAlbumId = null;
-            for (const album in lookup) {
-                if (lookup[album].includes(imageParam)) {
-                    foundAlbumId = album;
+            let foundImageId = null;
+            for (const albumId in lookup) {
+                if (lookup[albumId].includes(imageParam)) {
+                    foundAlbumId = albumId;
+                    foundImageId = imageParam;
                     break;
                 }
             }
-            if (foundAlbumId && !albums[foundAlbumId]) {
-                await loadAlbumData(foundAlbumId);
+            if (foundAlbumId) {
+                if (!albums[foundAlbumId]) {
+                    await loadAlbumData(foundAlbumId);
+                }
+                renderSingleImage(foundImageId);
             }
-            renderSingleImage(imageParam);
         } else {
-            // Optionally load and display the first album or a default view
-            if (Object.keys(lookup).length > 0) {
-                const firstAlbumId = Object.keys(lookup)[0];
+            const albumIds = Object.keys(lookup);
+            if (albumIds.length > 0) {
+                const firstAlbumId = albumIds[0];
                 await loadAlbumData(firstAlbumId);
                 renderGallery(firstAlbumId);
-            } else {
-                galleryContainer.innerHTML = '<p>No albums found.</p>';
             }
         }
     };
 
+    // Initialization
+    await loadLookupData();
+    await handleRouteChange();
+    populateTagFilter();
+    setLayout(currentLayout);
+
     // Event Listeners
+    window.addEventListener('popstate', handleRouteChange);
+
     themeToggle.addEventListener('click', () => {
         const currentTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
@@ -320,15 +331,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     searchInput.addEventListener('input', () => {
-        renderGallery(currentAlbumId);
+        renderGallery(currentAlbumId, true);
     });
 
     filterTags.addEventListener('change', () => {
-        renderGallery(currentAlbumId);
+        renderGallery(currentAlbumId, true);
     });
 
     sortOptions.addEventListener('change', () => {
-        renderGallery(currentAlbumId);
+        renderGallery(currentAlbumId, true);
     });
 
     favoritesToggle.addEventListener('click', () => {
@@ -337,48 +348,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderGallery(currentAlbumId, true);
     });
 
-    window.addEventListener('popstate', handleRouteChange);
-
-    // Initial Load
-    await loadLookupData();
-    const initialAlbumId = new URLSearchParams(window.location.search).get('album');
-    if (initialAlbumId) {
-        await loadAlbumData(initialAlbumId);
-    } else if (Object.keys(lookup).length > 0) {
-        await loadAlbumData(Object.keys(lookup)[0]); // Load first album initially
-    }
-    handleRouteChange();
-    populateTagFilter();
-
-    // Apply saved preferences
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        updateTheme(savedTheme);
-        if (savedTheme === 'dark') {
-            themeToggle.textContent = 'Light Mode';
-        }
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        updateTheme('dark');
-        themeToggle.textContent = 'Light Mode';
-    }
-
-    const savedColor = localStorage.getItem('color');
-    if (savedColor) {
-        updateColor(savedColor);
-        colorPicker.value = savedColor;
-    }
-
-    setLayout(currentLayout);
-    layoutSelector.value = currentLayout;
-
-    // PWA Registration
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js').then(registration => {
-                console.log('SW registered: ', registration);
-            }).catch(registrationError => {
-                console.log('SW registration failed: ', registrationError);
-            });
-        });
-    }
+    // Initial theme and color setup
+    const initialTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    updateTheme(initialTheme);
+    const savedColor = localStorage.getItem('color') || '#4CAF50';
+    updateColor(savedColor);
+    colorPicker.value = savedColor;
 });
