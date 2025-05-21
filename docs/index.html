@@ -1,293 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <title>Image Gallery</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 0;
-      background: #111;
-      color: #fff;
-    }
-
-    .container {
-      padding: 1rem;
-      max-width: 1000px;
-      margin: auto;
-    }
-
-    .album-title {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 1rem;
-    }
-
-    .grid img {
-      width: 100%;
-      cursor: pointer;
-      border-radius: 8px;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.9);
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 999;
-    }
-
-    .modal img {
-      max-width: 90%;
-      max-height: 70vh;
-      margin-bottom: 1rem;
-    }
-
-    .modal-content {
-      text-align: center;
-      max-width: 600px;
-    }
-
-    .modal-buttons {
-      margin-top: 1rem;
-    }
-
-    .modal button {
-      margin: 0 1rem;
-      padding: 0.5rem 1rem;
-    }
-
-    .hidden {
-      display: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Image Gallery</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
 </head>
-
 <body>
-  <div class="container">
-    <div id="error" class="hidden">Album not found or not specified.</div>
-    <div id="gallery" class="hidden">
-      <div class="album-title" id="albumTitle"></div>
-      <div class="grid" id="grid"></div>
-    </div>
-  </div>
+    <header>
+        <h1>Image Gallery</h1>
+        <div class="controls">
+            <button id="theme-toggle">Dark Mode</button>
+            <input type="color" id="color-picker" value="#4CAF50">
+            <select id="layout-selector">
+                <option value="grid">Grid</option>
+                <option value="list">List</option>
+                <option value="slideshow">Slideshow</option>
+            </select>
+        </div>
+        <div class="search-filter">
+            <input type="search" id="search-input" placeholder="Search images...">
+            <select id="filter-tags">
+                <option value="">All Tags</option>
+            </select>
+            <select id="sort-options">
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+                <option value="random">Random</option>
+            </select>
+            <button id="favorites-toggle">Show Favorites</button>
+        </div>
+    </header>
+    <main id="gallery-container"></main>
+    <div id="lightbox-container"></div>
 
-  <div class="modal" id="modal">
-    <img id="modalImage" src="" alt="">
-    <div class="modal-content">
-      <h2 id="modalTitle"></h2>
-      <p id="modalDesc"></p>
-      <div class="modal-buttons">
-        <button id="prevBtn">← Prev</button>
-        <button id="downloadBtn">Download</button>
-        <button id="nextBtn">Next →</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const qs = new URLSearchParams(location.search);
-    const albumId = qs.get('album');
-    const selectedId = qs.get('image');
-    const galleryEl = document.getElementById('gallery');
-    const errorEl = document.getElementById('error');
-    const gridEl = document.getElementById('grid');
-    const modal = document.getElementById('modal');
-    const modalImage = document.getElementById('modalImage');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalDesc = document.getElementById('modalDesc');
-    const downloadBtn = document.getElementById('downloadBtn');
-
-    let albumData = null;
-    let albumDataId = null;
-    let imageMeta = {};
-    let currentIndex = -1;
-
-    // Helper function to load JSON data from a given URL
-    async function loadJSON(url) {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Failed to load ' + url);
-      return res.json();
-    }
-
-    // Initialization function to set up the gallery
-    async function init() {
-      try {
-        let targetAlbumId = albumId;
-        let imageOnly = false;
-
-        // If no album is specified but an image is, try to find the album it belongs to.
-        // This assumes a global 'albums' object is available, or you'd need to load a master album list.
-        if (!targetAlbumId && selectedId) {
-          // This part assumes 'albums' is a global object where keys are album IDs
-          // and values have an 'images' array. Adjust if your 'albums' structure is different.
-          if (typeof albums !== 'undefined') { // Check if 'albums' global variable exists
-            for (const [key, value] of Object.entries(albums)) {
-              if (value && value.images && value.images.includes(selectedId)) {
-                targetAlbumId = key;
-                imageOnly = true;
-                break;
-              }
-            }
-          }
-        }
-
-        // If no album ID is found, display an error and exit.
-        if (!targetAlbumId) {
-          errorEl.classList.remove('hidden');
-          return;
-        }
-
-        // Load album data and image metadata for the target album.
-        albumData = await loadJSON(`albums/${targetAlbumId}/album.json`);
-        albumDataId = targetAlbumId;
-        const metadata = await loadJSON(`albums/${targetAlbumId}/images.json`);
-        imageMeta = metadata; // Store the image metadata for later use
-
-        // Render the gallery based on whether a specific image was selected or the whole album.
-        if (imageOnly) {
-          renderGallery([selectedId], albumData.title || '', albumData.description || '');
-        } else {
-          renderGallery(albumData.images, albumData.title || '', albumData.description || '');
-        }
-
-        // Set the document title and show the gallery.
-        document.title = albumData.title || 'Gallery';
-        galleryEl.classList.remove('hidden');
-
-        // If a specific image was selected, open its modal.
-        if (selectedId) {
-          const index = albumData.images.indexOf(selectedId);
-          if (index !== -1) openModal(index);
-        }
-      } catch (e) {
-        // Log any errors and display the error message.
-        console.error("Error initializing gallery:", e);
-        errorEl.classList.remove('hidden');
-      }
-    }
-
-    // Function to render the gallery grid
-    function renderGallery(ids, title, desc) {
-      // Set the album title and description.
-      document.getElementById('albumTitle').innerHTML = `<div>${title}</div><div style="font-size: 1rem; color: #aaa;">${desc}</div>`;
-      gridEl.innerHTML = ''; // Clear existing grid items
-
-      // Create and append image elements to the grid.
-      ids.forEach((id, idx) => {
-        const url = `albums/${albumDataId}/lowres/${id}.png`; // Modified line for low-res images
-        const img = document.createElement('img');
-        img.src = url;
-        // Set alt text from image metadata, falling back to empty string if not found.
-        img.alt = imageMeta[id]?.title || '';
-        img.onclick = () => openModal(idx); // Open modal on click
-        gridEl.appendChild(img);
-      });
-    }
-
-    // Function to open the image modal
-    function openModal(index) {
-      currentIndex = index;
-      const id = albumData.images[index];
-      // Get image metadata, defaulting to an empty object if not found.
-      const meta = imageMeta[id] || {};
-      const imgUrl = `albums/${albumDataId}/${id}.png`; // Modified line for full-res images
-
-      modalImage.src = imgUrl;
-      // Set the modal title from the image metadata's title field.
-      // This is the crucial line for displaying the title from images.json.
-      modalTitle.textContent = meta.title || '';
-      document.title = `${meta.title || id} - ${albumData?.title || 'Gallery'}`;
-      modalDesc.textContent = meta.description ? meta.description : '';
-
-      // Prepare for download and share functionality
-      const safeTitle = (meta.title || id).replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_');
-      downloadBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = imgUrl;
-        a.download = safeTitle + '.png';
-        a.click();
-
-        // Attempt to use Web Share API if available
-        if (navigator.share) {
-          const shareUrl = `${location.origin}${location.pathname}?image=${id}`;
-          navigator.share({
-            title: meta.title || 'Image', // Use meta.title for share title
-            text: meta.description || '',
-            url: shareUrl
-          }).catch(err => console.log('Share cancelled or failed:', err));
-        }
-      };
-
-      modal.style.display = 'flex'; // Show the modal
-      // Update URL history to reflect the currently viewed image
-      history.replaceState(null, '', `?album=${albumDataId}&image=${id}`);
-    }
-
-    // Function to navigate between images in the modal
-    function navigate(offset) {
-      const newIndex = currentIndex + offset;
-      if (newIndex >= 0 && newIndex < albumData.images.length) {
-        openModal(newIndex);
-      }
-    }
-
-    // Event listeners for modal navigation buttons
-    document.getElementById('prevBtn').onclick = () => navigate(-1);
-    document.getElementById('nextBtn').onclick = () => navigate(1);
-
-    // Close modal when clicking outside the image content
-    modal.onclick = e => {
-      if (e.target === modal) {
-        modal.style.display = 'none';
-        document.title = albumData.title || 'Gallery';
-        history.replaceState(null, '', `?album=${albumDataId}`);
-      }
-    };
-
-    // Keyboard navigation for modal
-    document.addEventListener('keydown', e => {
-      if (!modal.style.display.includes('flex')) return; // Only active when modal is open
-      if (e.key === 'ArrowLeft') navigate(-1);
-      if (e.key === 'ArrowRight') navigate(1);
-      if (e.key === 'Escape') {
-        modal.style.display = 'none';
-        document.title = albumData.title || 'Gallery';
-        history.replaceState(null, '', `?album=${albumDataId}`);
-      }
-    });
-
-    // Touch swipe support for modal navigation
-    let touchStartX = 0;
-    modal.addEventListener('touchstart', e => {
-      if (e.touches.length === 1) {
-        touchStartX = e.touches[0].clientX;
-      }
-    });
-
-    modal.addEventListener('touchend', e => {
-      const deltaX = e.changedTouches[0].clientX - touchStartX;
-      if (Math.abs(deltaX) > 50) { // Threshold for a significant swipe
-        if (deltaX > 0) navigate(-1); // Swipe right for previous
-        else navigate(1); // Swipe left for next
-      }
-    });
-
-    // Initialize the gallery when the script loads
-    init();
-  </script>
+    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+    <script src="main.js"></script>
 </body>
-
 </html>
