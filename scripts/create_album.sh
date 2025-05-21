@@ -1,8 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Resolve directories
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+root_dir="$(cd "$script_dir/.." && pwd)"
+docs_dir="$root_dir/docs"
+albums_dir="$docs_dir/albums"
 
 # Ensure jq is available
 if ! command -v jq &> /dev/null; then
-  echo "jq is required but not installed. Please install it first."
+  echo "❌ jq is required but not installed. Please install jq."
   exit 1
 fi
 
@@ -11,46 +18,64 @@ read -p "Album ID: " album_id
 read -p "Album Title: " album_title
 read -p "Album Description: " album_description
 
-album_dir="docs/images/$album_id"
-mkdir -p "$album_dir"
-./scramble_images.sh
+# Paths
+album_dir="$albums_dir/$album_id"
+renamed_file="$script_dir/renamed_images.txt"
+lookup_file="$docs_dir/lookup.json"
 
+# Prepare album directory
+mkdir -p "$album_dir"
+
+# Scramble images (writes renamed_images.txt in scripts/)
+"$script_dir/scramble_images.sh"
+
+# Build images.json and collect image IDs
 images_json="{}"
 album_images=()
 
-# Read and process each line from renamed_images.txt
 while IFS='>' read -r original new; do
-  # Handle raw filename format fallback (no '>'):
-  if [[ -z "$new" ]]; then
-    new=$(echo "$original" | xargs)
-    id="${new%.*}"
-    title="$id"
-  else
-    original=$(echo "$original" | xargs)
-    new=$(echo "$new" | xargs)
-    id="${new%.*}"
-    title=$(basename "$original" | sed 's/\.[^.]*$//' | sed 's/_/ /g')
-  fi
+  # normalize fields
+  original="$(echo "$original" | xargs)"
+  new="$(echo "${new:-$original}" | xargs)"
+  id="${new%.*}"
+  title="$(basename "$original" | sed 's/\.[^.]*$//' | sed 's/_/ /g')"
 
-  images_json=$(jq --arg id "$id" --arg title "$title" '. + {($id): {title: $title}}' <<< "$images_json")
+  # accumulate JSON
+  images_json="$(jq --arg id "$id" --arg title "$title" '. + {($id): {title: $title}}' <<<"$images_json")"
   album_images+=("\"$id\"")
 
-  if [[ -f "$new" ]]; then
-    mv "$new" "$album_dir/"
+  # move file into docs/albums/{albumid}/
+  if [[ -f "$script_dir/$new" ]]; then
+    mv "$script_dir/$new" "$album_dir/"
   else
-    echo "Warning: $new not found for moving."
+    echo "⚠️  Warning: '$new' not found in $script_dir, skipping."
   fi
-done < renamed_images.txt
+done < "$renamed_file"
 
-# Build album JSON
-albums_json=$(jq -n \
-  --arg title "$album_title" \
-  --arg desc "$album_description" \
-  --argjson images "$(printf "[%s]" "$(IFS=,; echo "${album_images[*]}")")" \
-  '{title: $title, description: $desc, images: $images}'
-)
-
+# Write images.json under the album dir
 echo "$images_json" > "$album_dir/images.json"
-echo "$albums_json" > "$album_dir/album.json"
 
-echo "Done. Written to $album_dir/album.json and images.json."
+# Build and write album.json under the album dir
+album_json="$(jq -n \
+  --arg title "$album_title" \
+  --arg desc  "$album_description" \
+  --argjson images "[$(IFS=,; echo "${album_images[*]}")]" \
+  '{title: $title, description: $desc, images: $images}'
+)"
+echo "$album_json" > "$album_dir/album.json"
+
+# ── Update global lookup.json ─────────────────────────────────────────────────
+
+# Bootstrap lookup.json if missing
+if [[ ! -f "$lookup_file" ]]; then
+  echo "{}" > "$lookup_file"
+fi
+
+jq --arg id "$album_id" \
+   --argjson imgs "[$(IFS=,; echo "${album_images[*]}")]" \
+   '. + {($id): $imgs}' \
+   "$lookup_file" > "${lookup_file}.tmp" \
+&& mv "${lookup_file}.tmp" "$lookup_file"
+
+echo "✅ Added album '$album_id' → [${album_images[*]}] into $lookup_file"
+echo "🎉 Done! Files in: $album_dir (images.json, album.json) and updated lookup.json."
