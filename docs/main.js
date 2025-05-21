@@ -39,10 +39,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             plyr: {
                 css: 'https://cdn.plyr.io/3.6.8/plyr.css',
                 js: 'https://cdn.plyr.io/3.6.8/plyr.js'
-            }
+            },
+            // Explicitly define buttons to display
+            moreLength: 0,
+            slideExtraAttributes: {
+                poster: ''
+            },
+            elements: null,
+            // Show navigation arrows
+            prevImg: true,
+            nextImg: true,
+            // Explicitly enable all buttons
+            buttons: [
+                'close',
+                'download',
+                'fullscreen',
+                'zoom',
+                'share'
+            ]
         });
         
-        console.log('GLightbox initialized');
+        console.log('GLightbox initialized with buttons');
     };
 
     const preloadNextImage = (elements, nextIndex) => {
@@ -167,6 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.dataset.gallery = `album-${albumId}`;
             link.dataset.title = details.title || '';
             link.dataset.description = details.description || '';
+            link.dataset.download = imageUrl; // Enable download button functionality
 
             link.appendChild(img);
             galleryItem.appendChild(link);
@@ -214,6 +232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         link.dataset.glightbox = 'gallery';
         link.dataset.title = details.title || '';
         link.dataset.description = details.description || '';
+        link.dataset.download = imageUrl; // Enable download button functionality
         
         link.appendChild(img);
         galleryItem.appendChild(link);
@@ -304,7 +323,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
+    // Add CSS for GLightbox buttons
+    const addGLightboxStyles = () => {
+        const style = document.createElement('style');
+        style.textContent = `
+            .gclose {
+                display: block !important;
+            }
+            .gnext, .gprev {
+                display: block !important;
+            }
+            .gdownload, .gfullscreen, .gzoom-in, .gzoom-out, .gshare {
+                display: block !important;
+            }
+            .glightbox-container .gslide-description {
+                background: rgba(0, 0, 0, 0.7);
+            }
+            .glightbox-clean .gslide-description {
+                background: rgba(0, 0, 0, 0.7);
+            }
+            .glightbox-mobile .glightbox-container .gslide-description {
+                background: rgba(0, 0, 0, 0.7);
+            }
+            .glightbox-button-hidden {
+                display: none !important;
+            }
+        `;
+        document.head.appendChild(style);
+    };
+
     // Initialization
+    addGLightboxStyles();
     await loadLookupData();
     await handleRouteChange();
     setLayout(currentLayout);
