@@ -13,6 +13,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     let currentLayout = localStorage.getItem('layout') || 'grid';
     let isShowingFavorites = false;
+    const defaultTitle = 'Static Image Gallery'; // Store the default title
+
+    // Function to update the document title based on context
+    const updateDocumentTitle = (context, albumId, imageId) => {
+        if (context === 'album' && albumId && albums[albumId]) {
+            // Set title to album name when viewing an album
+            document.title = `${albums[albumId].title || albumId} - Image Gallery`;
+        } else if (context === 'image' && albumId && imageId && imageDetails[albumId]?.[imageId]) {
+            // Set title to image name when viewing a specific image
+            document.title = `${imageDetails[albumId][imageId].title || imageId} - Image Gallery`;
+        } else {
+            // Default title when no specific context
+            document.title = defaultTitle;
+        }
+    };
 
     // Initialize GLightbox properly
     const initLightbox = () => {
@@ -72,6 +87,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         newUrl.searchParams.set('album', currentAlbumId);
                         newUrl.searchParams.set('image', imageId);
                         history.replaceState({}, '', newUrl);
+                        
+                        // Update document title with image name
+                        updateDocumentTitle('image', currentAlbumId, imageId);
                     }
                 }
             };
@@ -84,6 +102,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     newUrl.searchParams.set('album', currentAlbumId);
                     newUrl.searchParams.set('image', imageId);
                     history.replaceState({}, '', newUrl);
+                    
+                    // Update document title with image name
+                    updateDocumentTitle('image', currentAlbumId, imageId);
                 }
             } else {
                 // Fallback to extracting from source URL
@@ -103,6 +124,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         newUrl.searchParams.set('album', currentAlbumId);
                         newUrl.searchParams.set('image', imageMatch[1]);
                         history.replaceState({}, '', newUrl);
+                        
+                        // Update document title with image name
+                        updateDocumentTitle('image', currentAlbumId, imageMatch[1]);
                     }
                 }
             }, 100);
@@ -113,6 +137,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const newUrl = new URL(window.location);
             newUrl.searchParams.delete('image');
             history.replaceState({}, '', newUrl);
+            
+            // Update document title back to album name
+            updateDocumentTitle('album', currentAlbumId);
         });
         
         console.log('GLightbox initialized with buttons and URL updating');
@@ -194,6 +221,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        // Update document title with album name
+        updateDocumentTitle('album', albumId);
+
         const filteredAndSortedImages = filterAndSortImages(albumData.images, albumId);
 
         galleryContainer.innerHTML = '';
@@ -274,6 +304,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const imageUrl = `albums/${foundAlbumId}/${imageId}.png`;
         const thumbUrl = `albums/${foundAlbumId}/lowres/${imageId}.png`;
         const details = imageDetails[foundAlbumId][imageId];
+
+        // Update document title with image name
+        updateDocumentTitle('image', foundAlbumId, imageId);
 
         galleryContainer.innerHTML = '';
         
@@ -363,6 +396,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
             galleryContainer.innerHTML = '<p>Image not found.</p>';
+            // Reset title to default if image not found
+            document.title = defaultTitle;
         } else {
             await loadLookupData();
             const albumIds = Object.keys(lookup);
@@ -370,6 +405,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const firstAlbumId = albumIds[0];
                 await loadAlbumData(firstAlbumId);
                 renderGallery(firstAlbumId);
+            } else {
+                // Reset title to default if no albums found
+                document.title = defaultTitle;
             }
         }
     };
