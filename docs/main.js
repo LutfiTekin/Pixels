@@ -9,34 +9,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     let imageDetails = {};
     let lookup = {};
     let currentAlbumId = null;
-    let lightbox;
+    let lightbox = null;
     let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     let currentLayout = localStorage.getItem('layout') || 'grid';
     let isShowingFavorites = false;
 
-    // Initialize GLightbox
-    const initLightbox = (elements) => {
+    // Initialize GLightbox properly
+    const initLightbox = () => {
+        // Destroy existing lightbox instance if it exists
         if (lightbox) {
             lightbox.destroy();
         }
+        
+        // Initialize GLightbox on all gallery links
         lightbox = GLightbox({
-            elements: elements,
+            selector: 'a[data-glightbox]',
             touchNavigation: true,
             keyboardNavigation: true,
             zoomable: true,
             draggable: true,
-            buttons: ['download', 'fullscreen', 'close'],
-            plugins: [
-                {
-                    init: (instance) => {
-                        instance.on('slide_before_change', (prev, next) => {
-                            preloadNextImage(instance.elements, next);
-                        });
-                    }
-                },
-                'share', 'qrCode', 'copyLink'
-            ]
+            loop: true,
+            autoplayVideos: false,
+            openEffect: 'zoom',
+            closeEffect: 'fade',
+            cssEfects: {
+                fade: { in: 'fadeIn', out: 'fadeOut' },
+                zoom: { in: 'zoomIn', out: 'zoomOut' }
+            },
+            plyr: {
+                css: 'https://cdn.plyr.io/3.6.8/plyr.css',
+                js: 'https://cdn.plyr.io/3.6.8/plyr.js'
+            }
         });
+        
+        console.log('GLightbox initialized');
     };
 
     const preloadNextImage = (elements, nextIndex) => {
@@ -118,7 +124,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const filteredAndSortedImages = filterAndSortImages(albumData.images, albumId);
 
         galleryContainer.innerHTML = '';
-        const lightboxElements = [];
+
+        if (filteredAndSortedImages.length === 0) {
+            galleryContainer.innerHTML = '<p>No images found matching your criteria.</p>';
+            return;
+        }
 
         filteredAndSortedImages.forEach(imageId => {
             const details = imagesData[imageId];
@@ -153,27 +163,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const link = document.createElement('a');
             link.href = imageUrl;
-            link.dataset.glightbox = `album-${albumId}`;
+            link.dataset.glightbox = 'gallery';
+            link.dataset.gallery = `album-${albumId}`;
             link.dataset.title = details.title || '';
-            if (details.description) {
-                link.dataset.description = details.description;
-            }
+            link.dataset.description = details.description || '';
 
             link.appendChild(img);
             galleryItem.appendChild(link);
             galleryItem.appendChild(overlay);
             galleryItem.appendChild(favoriteButton);
             galleryContainer.appendChild(galleryItem);
-
-            lightboxElements.push({
-                href: imageUrl,
-                type: 'image',
-                title: details.title || '',
-                description: details.description || ''
-            });
         });
 
-        initLightbox(lightboxElements);
+        // Initialize lightbox after all elements are added to DOM
+        setTimeout(() => {
+            initLightbox();
+        }, 100);
     };
 
     const renderSingleImage = async (imageId) => {
@@ -190,15 +195,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        currentAlbumId = foundAlbumId;
         const imageUrl = `albums/${foundAlbumId}/${imageId}.png`;
+        const thumbUrl = `albums/${foundAlbumId}/lowres/${imageId}.png`;
         const details = imageDetails[foundAlbumId][imageId];
 
-        initLightbox([{
-            href: imageUrl,
-            type: 'image',
-            title: details.title || '',
-            description: details.description || ''
-        }]);
+        galleryContainer.innerHTML = '';
+        
+        const galleryItem = document.createElement('div');
+        galleryItem.classList.add('gallery-item');
+        
+        const img = document.createElement('img');
+        img.src = thumbUrl;
+        img.alt = details.title || '';
+        
+        const link = document.createElement('a');
+        link.href = imageUrl;
+        link.dataset.glightbox = 'gallery';
+        link.dataset.title = details.title || '';
+        link.dataset.description = details.description || '';
+        
+        link.appendChild(img);
+        galleryItem.appendChild(link);
+        galleryContainer.appendChild(galleryItem);
+        
+        // Open the lightbox automatically for single image
+        setTimeout(() => {
+            initLightbox();
+            const glightboxLinks = document.querySelectorAll('a[data-glightbox]');
+            if (glightboxLinks.length > 0) {
+                // Trigger click on the first link to open the lightbox
+                glightboxLinks[0].click();
+            }
+        }, 100);
     };
 
     const loadAlbumData = async (albumId) => {
@@ -235,32 +264,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             renderGallery(albumParam);
             if (imageParam && imageDetails[albumParam]?.[imageParam]) {
-                const imageUrl = `albums/${albumParam}/${imageParam}.png`;
-                const details = imageDetails[albumParam][imageParam];
-                initLightbox([{
-                    href: imageUrl,
-                    type: 'image',
-                    title: details.title || '',
-                    description: details.description || ''
-                }]);
+                // Wait for gallery to be rendered, then open the specific image
+                setTimeout(() => {
+                    const links = document.querySelectorAll(`a[data-glightbox="gallery"]`);
+                    for (let i = 0; i < links.length; i++) {
+                        if (links[i].href.includes(imageParam)) {
+                            links[i].click();
+                            break;
+                        }
+                    }
+                }, 200);
             }
         } else if (imageParam) {
-            let foundAlbumId = null;
-            let foundImageId = null;
+            // Try to find which album contains this image
+            await loadLookupData();
             for (const albumId in lookup) {
                 if (lookup[albumId].includes(imageParam)) {
-                    foundAlbumId = albumId;
-                    foundImageId = imageParam;
-                    break;
+                    await loadAlbumData(albumId);
+                    renderSingleImage(imageParam);
+                    return;
                 }
             }
-            if (foundAlbumId) {
-                if (!albums[foundAlbumId]) {
-                    await loadAlbumData(foundAlbumId);
-                }
-                renderSingleImage(foundImageId);
-            }
+            galleryContainer.innerHTML = '<p>Image not found.</p>';
         } else {
+            await loadLookupData();
             const albumIds = Object.keys(lookup);
             if (albumIds.length > 0) {
                 const firstAlbumId = albumIds[0];
@@ -270,10 +297,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // Check if GLightbox is loaded
+    if (typeof GLightbox === 'undefined') {
+        console.error('GLightbox library not loaded!');
+        galleryContainer.innerHTML = '<p>Error: GLightbox library not loaded. Please check your internet connection and refresh the page.</p>';
+        return;
+    }
+    
     // Initialization
     await loadLookupData();
     await handleRouteChange();
     setLayout(currentLayout);
+    layoutSelector.value = currentLayout;
 
     // Event Listeners
     window.addEventListener('popstate', handleRouteChange);
@@ -295,4 +330,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         favoritesToggle.textContent = isShowingFavorites ? 'Show All' : 'Show Favorites';
         renderGallery(currentAlbumId, true);
     });
+
+    // Add service worker registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./service-worker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful');
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed:', error);
+                });
+        });
+    }
 });
