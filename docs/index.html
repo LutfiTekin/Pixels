@@ -187,11 +187,11 @@
 
       // Create and append image elements to the grid.
       ids.forEach((id, idx) => {
-        const url = `images/${albumDataId}/${id}.png`;
+        const url = `albums/${albumDataId}/lowres/${id}.png`; // Modified line for low-res images
         const img = document.createElement('img');
         img.src = url;
         // Set alt text from image metadata, falling back to empty string if not found.
-        img.alt = imageMeta[id]?.title || ''; 
+        img.alt = imageMeta[id]?.title || '';
         img.onclick = () => openModal(idx); // Open modal on click
         gridEl.appendChild(img);
       });
@@ -202,13 +202,13 @@
       currentIndex = index;
       const id = albumData.images[index];
       // Get image metadata, defaulting to an empty object if not found.
-      const meta = imageMeta[id] || {}; 
-      const imgUrl = `images/${albumDataId}/${id}.png`;
+      const meta = imageMeta[id] || {};
+      const imgUrl = `albums/${albumDataId}/${id}.png`; // Modified line for full-res images
 
       modalImage.src = imgUrl;
       // Set the modal title from the image metadata's title field.
       // This is the crucial line for displaying the title from images.json.
-      modalTitle.textContent = meta.title || ''; 
+      modalTitle.textContent = meta.title || '';
       document.title = `${meta.title || id} - ${albumData?.title || 'Gallery'}`;
       modalDesc.textContent = meta.description ? meta.description : '';
 
