@@ -59,7 +59,63 @@ document.addEventListener('DOMContentLoaded', async () => {
             ]
         });
         
-        console.log('GLightbox initialized with buttons');
+        // Add event listeners for URL updating
+        lightbox.on('slide_changed', ({ prev, current }) => {
+            const updateUrlWithCurrentImage = () => {
+                if (current && current.slideNode) {
+                    const imageId = current.slideNode.querySelector('.gslide-image img')?.dataset?.imageId || 
+                                    current.slideNode.querySelector('a')?.dataset?.imageId;
+                    
+                    if (imageId && currentAlbumId) {
+                        // Update URL without reloading page
+                        const newUrl = new URL(window.location);
+                        newUrl.searchParams.set('album', currentAlbumId);
+                        newUrl.searchParams.set('image', imageId);
+                        history.replaceState({}, '', newUrl);
+                    }
+                }
+            };
+            
+            // First try using the direct method
+            if (current && current.slideNode && current.slideNode.querySelector('a')?.dataset?.imageId) {
+                const imageId = current.slideNode.querySelector('a')?.dataset?.imageId;
+                if (imageId && currentAlbumId) {
+                    const newUrl = new URL(window.location);
+                    newUrl.searchParams.set('album', currentAlbumId);
+                    newUrl.searchParams.set('image', imageId);
+                    history.replaceState({}, '', newUrl);
+                }
+            } else {
+                // Fallback to extracting from source URL
+                setTimeout(updateUrlWithCurrentImage, 100);
+            }
+        });
+        
+        // When lightbox opens, update URL with the current image
+        lightbox.on('open', () => {
+            setTimeout(() => {
+                const currentSlide = document.querySelector('.gslide.current');
+                const imageUrl = currentSlide?.querySelector('img')?.src;
+                if (imageUrl) {
+                    const imageMatch = imageUrl.match(/\/([^\/]+)\.png$/);
+                    if (imageMatch && imageMatch[1] && currentAlbumId) {
+                        const newUrl = new URL(window.location);
+                        newUrl.searchParams.set('album', currentAlbumId);
+                        newUrl.searchParams.set('image', imageMatch[1]);
+                        history.replaceState({}, '', newUrl);
+                    }
+                }
+            }, 100);
+        });
+        
+        // When lightbox closes, update URL to remove image parameter
+        lightbox.on('close', () => {
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.delete('image');
+            history.replaceState({}, '', newUrl);
+        });
+        
+        console.log('GLightbox initialized with buttons and URL updating');
     };
 
     const preloadNextImage = (elements, nextIndex) => {
@@ -185,6 +241,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.dataset.title = details.title || '';
             link.dataset.description = details.description || '';
             link.dataset.download = imageUrl; // Enable download button functionality
+            link.dataset.imageId = imageId; // Store image ID for URL updating
 
             link.appendChild(img);
             galleryItem.appendChild(link);
@@ -233,6 +290,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         link.dataset.title = details.title || '';
         link.dataset.description = details.description || '';
         link.dataset.download = imageUrl; // Enable download button functionality
+        link.dataset.imageId = imageId; // Store image ID for URL updating
         
         link.appendChild(img);
         galleryItem.appendChild(link);
