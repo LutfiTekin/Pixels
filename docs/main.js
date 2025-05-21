@@ -20,16 +20,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (context === 'album' && albumId && albums[albumId]) {
             // Set title to album name when viewing an album
             document.title = `${albums[albumId].title || albumId} - Image Gallery`;
+            console.log('Title set to album:', document.title);
         } else if (context === 'image' && albumId && imageId && imageDetails[albumId]?.[imageId]) {
             // Set title to image name when viewing a specific image
             document.title = `${imageDetails[albumId][imageId].title || imageId} - Image Gallery`;
+            console.log('Title set to image:', document.title);
         } else {
             // Default title when no specific context
             document.title = defaultTitle;
+            console.log('Title set to default:', document.title);
         }
     };
 
-    // Initialize GLightbox properly
     const initLightbox = () => {
         // Destroy existing lightbox instance if it exists
         if (lightbox) {
@@ -74,12 +76,51 @@ document.addEventListener('DOMContentLoaded', async () => {
             ]
         });
         
-        // Add event listeners for URL updating
+        // Add event listeners for URL updating and title changes
         lightbox.on('slide_changed', ({ prev, current }) => {
-            const updateUrlWithCurrentImage = () => {
+            const updateUrlAndTitleWithCurrentImage = () => {
                 if (current && current.slideNode) {
-                    const imageId = current.slideNode.querySelector('.gslide-image img')?.dataset?.imageId || 
-                                    current.slideNode.querySelector('a')?.dataset?.imageId;
+                    // Try multiple methods to get the image ID
+                    let imageId = null;
+                    
+                    // Method 1: Try to get from dataset on img
+                    const imgElement = current.slideNode.querySelector('.gslide-image img');
+                    if (imgElement && imgElement.dataset && imgElement.dataset.imageId) {
+                        imageId = imgElement.dataset.imageId;
+                    }
+                    
+                    // Method 2: Try to get from dataset on anchor
+                    if (!imageId) {
+                        const anchorElement = current.slideNode.querySelector('a');
+                        if (anchorElement && anchorElement.dataset && anchorElement.dataset.imageId) {
+                            imageId = anchorElement.dataset.imageId;
+                        }
+                    }
+                    
+                    // Method 3: Try to parse from src attribute
+                    if (!imageId) {
+                        const img = current.slideNode.querySelector('.gslide-image img');
+                        if (img && img.src) {
+                            const srcMatch = img.src.match(/\/([^\/]+)\.(png|jpg|jpeg|gif|webp)$/i);
+                            if (srcMatch && srcMatch[1]) {
+                                imageId = srcMatch[1];
+                            }
+                        }
+                    }
+                    
+                    // Method 4: Try to get from description title
+                    if (!imageId) {
+                        const title = current.slideNode.querySelector('.gslide-title');
+                        if (title && title.textContent) {
+                            // Search the imageDetails to find a match by title
+                            for (const imgId in imageDetails[currentAlbumId]) {
+                                if (imageDetails[currentAlbumId][imgId].title === title.textContent.trim()) {
+                                    imageId = imgId;
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     
                     if (imageId && currentAlbumId) {
                         // Update URL without reloading page
@@ -90,13 +131,53 @@ document.addEventListener('DOMContentLoaded', async () => {
                         
                         // Update document title with image name
                         updateDocumentTitle('image', currentAlbumId, imageId);
+                        console.log('Title updated to:', document.title, 'for image:', imageId);
                     }
                 }
             };
             
-            // First try using the direct method
-            if (current && current.slideNode && current.slideNode.querySelector('a')?.dataset?.imageId) {
-                const imageId = current.slideNode.querySelector('a')?.dataset?.imageId;
+            // First try using the direct method with a more thorough approach
+            updateUrlAndTitleWithCurrentImage();
+            
+            // Also run it after a short delay to ensure DOM elements are fully loaded
+            setTimeout(updateUrlAndTitleWithCurrentImage, 100);
+        });
+        
+        // When lightbox opens, update URL with the current image
+        lightbox.on('open', () => {
+            setTimeout(() => {
+                const currentSlide = document.querySelector('.gslide.current');
+                const imageUrl = currentSlide?.querySelector('img')?.src;
+                const slideTitle = currentSlide?.querySelector('.gslide-title')?.textContent;
+                
+                let imageId = null;
+                
+                // Method 1: Try to extract from URL
+                if (imageUrl) {
+                    const imageMatch = imageUrl.match(/\/([^\/]+)\.(png|jpg|jpeg|gif|webp)$/i);
+                    if (imageMatch && imageMatch[1]) {
+                        imageId = imageMatch[1];
+                    }
+                }
+                
+                // Method 2: Try to find by title
+                if (!imageId && slideTitle && currentAlbumId && imageDetails[currentAlbumId]) {
+                    for (const imgId in imageDetails[currentAlbumId]) {
+                        if (imageDetails[currentAlbumId][imgId].title === slideTitle.trim()) {
+                            imageId = imgId;
+                            break;
+                        }
+                    }
+                }
+                
+                // Method 3: Try to extract from data attribute
+                if (!imageId) {
+                    const imgElement = currentSlide?.querySelector('img');
+                    if (imgElement && imgElement.dataset && imgElement.dataset.imageId) {
+                        imageId = imgElement.dataset.imageId;
+                    }
+                }
+                
                 if (imageId && currentAlbumId) {
                     const newUrl = new URL(window.location);
                     newUrl.searchParams.set('album', currentAlbumId);
@@ -105,29 +186,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     // Update document title with image name
                     updateDocumentTitle('image', currentAlbumId, imageId);
-                }
-            } else {
-                // Fallback to extracting from source URL
-                setTimeout(updateUrlWithCurrentImage, 100);
-            }
-        });
-        
-        // When lightbox opens, update URL with the current image
-        lightbox.on('open', () => {
-            setTimeout(() => {
-                const currentSlide = document.querySelector('.gslide.current');
-                const imageUrl = currentSlide?.querySelector('img')?.src;
-                if (imageUrl) {
-                    const imageMatch = imageUrl.match(/\/([^\/]+)\.png$/);
-                    if (imageMatch && imageMatch[1] && currentAlbumId) {
-                        const newUrl = new URL(window.location);
-                        newUrl.searchParams.set('album', currentAlbumId);
-                        newUrl.searchParams.set('image', imageMatch[1]);
-                        history.replaceState({}, '', newUrl);
-                        
-                        // Update document title with image name
-                        updateDocumentTitle('image', currentAlbumId, imageMatch[1]);
-                    }
+                    console.log('Lightbox open: Title updated to:', document.title, 'for image:', imageId);
                 }
             }, 100);
         });
@@ -272,6 +331,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.dataset.description = details.description || '';
             link.dataset.download = imageUrl; // Enable download button functionality
             link.dataset.imageId = imageId; // Store image ID for URL updating
+            
+            // Add data attributes to img for easier slide detection
+            img.dataset.imageId = imageId;
+            img.dataset.albumId = albumId;
 
             link.appendChild(img);
             galleryItem.appendChild(link);
