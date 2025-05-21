@@ -1,10 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const galleryContainer = document.getElementById('gallery-container');
-    const themeToggle = document.getElementById('theme-toggle');
-    const colorPicker = document.getElementById('color-picker');
     const layoutSelector = document.getElementById('layout-selector');
     const searchInput = document.getElementById('search-input');
-    const filterTags = document.getElementById('filter-tags');
     const sortOptions = document.getElementById('sort-options');
     const favoritesToggle = document.getElementById('favorites-toggle');
 
@@ -49,17 +46,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    const updateTheme = (theme) => {
-        document.body.classList.toggle('dark-mode', theme === 'dark');
-        localStorage.setItem('theme', theme);
-        themeToggle.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-    };
-
-    const updateColor = (color) => {
-        document.documentElement.style.setProperty('--primary-color', color);
-        localStorage.setItem('color', color);
-    };
-
     const setLayout = (layout) => {
         galleryContainer.className = layout === 'masonry' ? 'masonry' : 'gallery';
         galleryContainer.classList.add(layout);
@@ -91,14 +77,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const filterAndSortImages = (albumImages, albumId) => {
         let filteredImages = albumImages;
         const searchTerm = searchInput.value.toLowerCase();
-        const selectedTag = filterTags.value;
 
         filteredImages = filteredImages.filter(imageId => {
             const details = imageDetails[albumId]?.[imageId];
             if (!details) return false;
-            const titleMatch = details.title?.toLowerCase().includes(searchTerm);
-            const tagMatch = !selectedTag || details.tags?.includes(selectedTag);
-            return titleMatch && tagMatch;
+            return details.title?.toLowerCase().includes(searchTerm);
         });
 
         if (isShowingFavorites) {
@@ -241,26 +224,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    const populateTagFilter = () => {
-        const allTags = new Set();
-        for (const albumId in imageDetails) {
-            for (const imageId in imageDetails[albumId]) {
-                const tags = imageDetails[albumId][imageId]?.tags;
-                if (tags) {
-                    tags.forEach(tag => allTags.add(tag));
-                }
-            }
-        }
-
-        filterTags.innerHTML = '<option value="">All Tags</option>';
-        Array.from(allTags).sort().forEach(tag => {
-            const option = document.createElement('option');
-            option.value = tag;
-            option.textContent = tag;
-            filterTags.appendChild(option);
-        });
-    };
-
     const handleRouteChange = async () => {
         const params = new URLSearchParams(window.location.search);
         const albumParam = params.get('album');
@@ -310,31 +273,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialization
     await loadLookupData();
     await handleRouteChange();
-    populateTagFilter();
     setLayout(currentLayout);
 
     // Event Listeners
     window.addEventListener('popstate', handleRouteChange);
-
-    themeToggle.addEventListener('click', () => {
-        const currentTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        updateTheme(newTheme);
-    });
-
-    colorPicker.addEventListener('input', (event) => {
-        updateColor(event.target.value);
-    });
 
     layoutSelector.addEventListener('change', (event) => {
         setLayout(event.target.value);
     });
 
     searchInput.addEventListener('input', () => {
-        renderGallery(currentAlbumId, true);
-    });
-
-    filterTags.addEventListener('change', () => {
         renderGallery(currentAlbumId, true);
     });
 
@@ -347,11 +295,4 @@ document.addEventListener('DOMContentLoaded', async () => {
         favoritesToggle.textContent = isShowingFavorites ? 'Show All' : 'Show Favorites';
         renderGallery(currentAlbumId, true);
     });
-
-    // Initial theme and color setup 
-    const initialTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    updateTheme(initialTheme);
-    const savedColor = localStorage.getItem('color') || '#4CAF50';
-    updateColor(savedColor);
-    colorPicker.value = savedColor;
 });

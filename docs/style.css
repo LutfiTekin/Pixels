@@ -1,14 +1,16 @@
 body {
     font-family: sans-serif;
     margin: 0;
-    background: #111; /* Dark background */
-    color: #fff; /* White text */
+    background: #111; /* Default dark background */
+    color: #fff; /* Default white text */
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-body.dark-mode {
-    background-color: #f4f4f4;
-    color: #333;
+@media (prefers-color-scheme: light) {
+    body {
+        background-color: #f4f4f4;
+        color: #333;
+    }
 }
 
 .container {
