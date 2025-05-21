@@ -53,7 +53,7 @@ for album_path in "$albums_dir"/*/; do
       | while IFS= read -r -d '' img; do
           target="$lowres_dir/$(basename "$img")"
           (
-            convert "$img" -resize 10% "$target"
+            convert "$img" -resize 25% "$target"
           ) &
           # throttle to $cores concurrent jobs
           while (( $(jobs -rp | wc -l) >= cores )); do
