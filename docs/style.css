@@ -75,8 +75,7 @@ header h1 {
     width: 100%;
     height: auto;
     display: block;
-    aspect-ratio: 1 / 1; /* Maintain aspect ratio for grid */
-    object-fit: cover;
+    object-fit: contain; /* Preserve aspect ratio */
     transition: opacity 0.3s ease;
     background-color: #333; /* Placeholder background */
 }

@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderGallery(currentAlbumId, true);
     });
 
-    // Initial theme and color setup
+    // Initial theme and color setup 
     const initialTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     updateTheme(initialTheme);
     const savedColor = localStorage.getItem('color') || '#4CAF50';
