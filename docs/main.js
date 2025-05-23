@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         shareBtn.onclick = async (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             const shareData = {
                 title: imageTitle || 'Image from Gallery',
                 text: `Check out this image: ${imageTitle || 'Untitled'}`,
@@ -106,11 +106,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         toast.className = 'toast-notification';
         toast.textContent = message;
         document.body.appendChild(toast);
-        
+
         setTimeout(() => {
             toast.classList.add('show');
         }, 100);
-        
+
         setTimeout(() => {
             toast.classList.remove('show');
             setTimeout(() => {
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (lightbox) {
             lightbox.destroy();
         }
-        
+
         // Initialize GLightbox on all gallery links
         lightbox = GLightbox({
             selector: 'a[data-glightbox]',
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             prevImg: true,
             nextImg: true
         });
-        
+
         // Add custom buttons after lightbox opens
         lightbox.on('open', () => {
             setTimeout(() => {
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateUrlAndTitle();
             }, 100);
         });
-        
+
         // Add event listeners for URL updating and title changes
         lightbox.on('slide_changed', ({ prev, current }) => {
             setTimeout(() => {
@@ -166,19 +166,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 updateUrlAndTitle();
             }, 100);
         });
-        
+
         // When lightbox closes, update URL to remove image parameter
         lightbox.on('close', () => {
             const newUrl = new URL(window.location);
             newUrl.searchParams.delete('image');
             history.replaceState({}, '', newUrl);
-            
+
             // Update document title back to album name
             updateDocumentTitle('album', currentAlbumId);
-            document.getElementById('album-title').textContent = albumData.title || 'Image Gallery';
-            document.getElementById('album-description').textContent = albumData.description || '';
+            if (albums[currentAlbumId]) {
+                document.getElementById('album-title').textContent = albums[currentAlbumId].title || 'Image Gallery';
+                document.getElementById('album-description').textContent = albums[currentAlbumId].description || '';
+            }
         });
-        
+
         console.log('GLightbox initialized with custom buttons');
     };
 
@@ -190,9 +192,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentSlide = document.querySelector('.gslide.current');
         if (!currentSlide) return;
 
-        const toolbar = currentSlide.querySelector('.gslide-toolbar') || 
-                       currentSlide.querySelector('.glightbox-clean') ||
-                       currentSlide;
+        const toolbar = currentSlide.querySelector('.gslide-toolbar') ||
+            currentSlide.querySelector('.glightbox-clean') ||
+            currentSlide;
 
         const imageUrl = currentSlide.querySelector('img')?.src;
         const slideTitle = currentSlide.querySelector('.gslide-title')?.textContent;
@@ -200,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (imageUrl) {
             // Get the high-res image URL
             const highResUrl = imageUrl.replace('/lowres/', '/');
-            
+
             const downloadBtn = createDownloadButton(highResUrl, slideTitle);
             const shareBtn = createShareButton(highResUrl, slideTitle);
 
@@ -228,9 +230,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const imageUrl = currentSlide.querySelector('img')?.src;
         const slideTitle = currentSlide.querySelector('.gslide-title')?.textContent;
-        
+
         let imageId = null;
-        
+
         // Method 1: Try to extract from URL
         if (imageUrl) {
             const imageMatch = imageUrl.match(/\/([^\/]+)\.(png|jpg|jpeg|gif|webp)$/i);
@@ -238,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 imageId = imageMatch[1];
             }
         }
-        
+
         // Method 2: Try to find by title
         if (!imageId && slideTitle && currentAlbumId && imageDetails[currentAlbumId]) {
             for (const imgId in imageDetails[currentAlbumId]) {
@@ -248,13 +250,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         }
-        
+
         if (imageId && currentAlbumId) {
             const newUrl = new URL(window.location);
             newUrl.searchParams.set('album', currentAlbumId);
             newUrl.searchParams.set('image', imageId);
             history.replaceState({}, '', newUrl);
-            
+
             // Update document title with image name
             updateDocumentTitle('image', currentAlbumId, imageId);
             console.log('Title updated to:', document.title, 'for image:', imageId);
@@ -387,7 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.dataset.title = details.title || '';
             link.dataset.description = details.description || '';
             link.dataset.imageId = imageId; // Store image ID for URL updating
-            
+
             // Add data attributes to img for easier slide detection
             img.dataset.imageId = imageId;
             img.dataset.albumId = albumId;
@@ -428,25 +430,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateDocumentTitle('image', foundAlbumId, imageId);
 
         galleryContainer.innerHTML = '';
-        
+
         const galleryItem = document.createElement('div');
         galleryItem.classList.add('gallery-item');
-        
+
         const img = document.createElement('img');
         img.src = thumbUrl;
         img.alt = details.title || '';
-        
+
         const link = document.createElement('a');
         link.href = imageUrl;
         link.dataset.glightbox = 'gallery';
         link.dataset.title = details.title || '';
         link.dataset.description = details.description || '';
         link.dataset.imageId = imageId; // Store image ID for URL updating
-        
+
         link.appendChild(img);
         galleryItem.appendChild(link);
         galleryContainer.appendChild(galleryItem);
-        
+
         // Open the lightbox automatically for single image
         setTimeout(() => {
             initLightbox();
@@ -536,7 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         galleryContainer.innerHTML = '<p>Error: GLightbox library not loaded. Please check your internet connection and refresh the page.</p>';
         return;
     }
-    
+
     // Add CSS for custom buttons and toast notifications
     const addCustomStyles = () => {
         const style = document.createElement('style');
