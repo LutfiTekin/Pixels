@@ -341,6 +341,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Update document title with album name
         updateDocumentTitle('album', albumId);
+        document.getElementById('album-title').textContent = albumData.title || 'Image Gallery';
+        document.getElementById('album-description').textContent = albumData.description || '';
+
 
         const filteredAndSortedImages = filterAndSortImages(albumData.images, albumId);
 
