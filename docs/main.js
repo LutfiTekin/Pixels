@@ -71,10 +71,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             e.stopPropagation();
 
+            // Find the albumId and imageId from the imageUrl
+            // albums/{albumId}/{imageId}.png
+            let albumId = null;
+            let imageId = null;
+            const match = imageUrl.match(/albums\/([^/]+)\/([^/.]+)\.(png|jpg|jpeg|webp|gif)/i);
+            if (match) {
+                albumId = match[1];
+                imageId = match[2];
+            }
+
+            // Build a direct link
+            let directUrl = window.location.origin + window.location.pathname;
+            if (albumId && imageId) {
+                directUrl += `?album=${encodeURIComponent(albumId)}&image=${encodeURIComponent(imageId)}`;
+            }
+
             const shareData = {
                 title: imageTitle || 'Image from Gallery',
                 text: `Check out this image: ${imageTitle || 'Untitled'}`,
-                url: window.location.href
+                url: directUrl
             };
 
             try {
@@ -82,14 +98,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await navigator.share(shareData);
                 } else {
                     // Fallback: copy to clipboard
-                    await navigator.clipboard.writeText(window.location.href);
+                    await navigator.clipboard.writeText(directUrl);
                     showToast('Image URL copied to clipboard!');
                 }
             } catch (error) {
                 console.error('Share failed:', error);
                 // Final fallback: copy to clipboard manually
                 try {
-                    await navigator.clipboard.writeText(window.location.href);
+                    await navigator.clipboard.writeText(directUrl);
                     showToast('Image URL copied to clipboard!');
                 } catch (clipboardError) {
                     console.error('Clipboard access failed:', clipboardError);
@@ -99,6 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
         return shareBtn;
     };
+
 
     // Function to show toast notifications
     const showToast = (message) => {
