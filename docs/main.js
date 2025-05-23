@@ -558,11 +558,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             .custom-download-btn {
-                right: 80px;
+                right: 100px;
             }
             
             .custom-share-btn {
-                right: 20px;
+                right: 80px;
             }
             
             .custom-download-btn:hover, .custom-share-btn:hover {
