@@ -486,7 +486,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // ------ THIS SECTION IS CHANGED ------
     const handleRouteChange = async () => {
         const params = new URLSearchParams(window.location.search);
         const albumParam = params.get('album');
@@ -526,13 +525,72 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.title = defaultTitle;
             }
         } else {
-            // No album or image specified: load a default album
-            const defaultAlbumId = "melodycards";
-            await loadAlbumData(defaultAlbumId);
-            renderGallery(defaultAlbumId);
+            // No album or image specified: load 10 random images from lookup.json
+            await loadLookupData();
+
+            // Flatten all image ids with their albumId
+            let allImages = [];
+            for (const [albumId, imageIds] of Object.entries(lookup)) {
+                imageIds.forEach(imageId => {
+                    allImages.push({ albumId, imageId });
+                });
+            }
+            // Shuffle and pick 10 random images
+            allImages = allImages.sort(() => Math.random() - 0.5).slice(0, 10);
+
+            // Load album data for all involved albums (skip dupes)
+            const involvedAlbums = [...new Set(allImages.map(img => img.albumId))];
+            for (const albumId of involvedAlbums) {
+                if (!albums[albumId]) {
+                    await loadAlbumData(albumId);
+                }
+            }
+
+            // Render the 10 random images
+            galleryContainer.innerHTML = '';
+            document.getElementById('album-title').textContent = 'Random Images';
+            document.getElementById('album-description').textContent = 'A random selection from all albums';
+
+            allImages.forEach(({ albumId, imageId }) => {
+                const details = imageDetails[albumId]?.[imageId] || {};
+                const imageUrl = `albums/${albumId}/${imageId}.png`;
+                const thumbUrl = `albums/${albumId}/lowres/${imageId}.png`;
+
+                const galleryItem = document.createElement('div');
+                galleryItem.classList.add('gallery-item');
+
+                const img = document.createElement('img');
+                img.src = thumbUrl;
+                img.alt = details.title || '';
+                img.classList.add('loading');
+                img.onload = () => img.classList.remove('loading');
+
+                const overlay = document.createElement('div');
+                overlay.classList.add('overlay');
+                overlay.textContent = details.title || imageId;
+
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.dataset.glightbox = 'gallery';
+                link.dataset.gallery = `album-${albumId}`;
+                link.dataset.title = details.title || imageId;
+                link.dataset.description = details.description || '';
+                link.dataset.imageId = imageId;
+
+                img.dataset.imageId = imageId;
+                img.dataset.albumId = albumId;
+
+                link.appendChild(img);
+                galleryItem.appendChild(link);
+                galleryItem.appendChild(overlay);
+                galleryContainer.appendChild(galleryItem);
+            });
+
+            setTimeout(() => {
+                initLightbox();
+            }, 100);
         }
     };
-    // ------ END OF CHANGE ------
 
     // Check if GLightbox is loaded
     if (typeof GLightbox === 'undefined') {
