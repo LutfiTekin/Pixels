@@ -175,6 +175,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Update document title back to album name
             updateDocumentTitle('album', currentAlbumId);
+            document.getElementById('album-title').textContent = albumData.title || 'Image Gallery';
+            document.getElementById('album-description').textContent = albumData.description || '';
         });
         
         console.log('GLightbox initialized with custom buttons');
