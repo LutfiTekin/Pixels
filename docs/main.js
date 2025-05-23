@@ -32,6 +32,93 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // Function to create custom download button
+    const createDownloadButton = (imageUrl, imageName) => {
+        const downloadBtn = document.createElement('button');
+        downloadBtn.className = 'custom-download-btn';
+        downloadBtn.innerHTML = '📥';
+        downloadBtn.title = 'Download Image';
+        downloadBtn.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+                const response = await fetch(imageUrl);
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${imageName || 'image'}.png`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Download failed:', error);
+                // Fallback: open image in new tab
+                window.open(imageUrl, '_blank');
+            }
+        };
+        return downloadBtn;
+    };
+
+    // Function to create custom share button
+    const createShareButton = (imageUrl, imageTitle) => {
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'custom-share-btn';
+        shareBtn.innerHTML = '🔗';
+        shareBtn.title = 'Share Image';
+        shareBtn.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const shareData = {
+                title: imageTitle || 'Image from Gallery',
+                text: `Check out this image: ${imageTitle || 'Untitled'}`,
+                url: window.location.href
+            };
+
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    // Fallback: copy to clipboard
+                    await navigator.clipboard.writeText(window.location.href);
+                    showToast('Image URL copied to clipboard!');
+                }
+            } catch (error) {
+                console.error('Share failed:', error);
+                // Final fallback: copy to clipboard manually
+                try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    showToast('Image URL copied to clipboard!');
+                } catch (clipboardError) {
+                    console.error('Clipboard access failed:', clipboardError);
+                    showToast('Unable to share. Try copying the URL manually.');
+                }
+            }
+        };
+        return shareBtn;
+    };
+
+    // Function to show toast notifications
+    const showToast = (message) => {
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.add('show');
+        }, 100);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 300);
+        }, 3000);
+    };
+
     const initLightbox = () => {
         // Destroy existing lightbox instance if it exists
         if (lightbox) {
@@ -53,11 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fade: { in: 'fadeIn', out: 'fadeOut' },
                 zoom: { in: 'zoomIn', out: 'zoomOut' }
             },
-            plyr: {
-                css: 'https://cdn.plyr.io/3.6.8/plyr.css',
-                js: 'https://cdn.plyr.io/3.6.8/plyr.js'
-            },
-            // Explicitly define buttons to display
+            // Explicitly define buttons to display (only standard ones)
             moreLength: 0,
             slideExtraAttributes: {
                 poster: ''
@@ -65,129 +148,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             elements: null,
             // Show navigation arrows
             prevImg: true,
-            nextImg: true,
-            // Explicitly enable all buttons
-            buttons: [
-                'close',
-                'download',
-                'fullscreen',
-                'zoom',
-                'share'
-            ]
+            nextImg: true
+        });
+        
+        // Add custom buttons after lightbox opens
+        lightbox.on('open', () => {
+            setTimeout(() => {
+                addCustomButtons();
+                updateUrlAndTitle();
+            }, 100);
         });
         
         // Add event listeners for URL updating and title changes
         lightbox.on('slide_changed', ({ prev, current }) => {
-            const updateUrlAndTitleWithCurrentImage = () => {
-                if (current && current.slideNode) {
-                    // Try multiple methods to get the image ID
-                    let imageId = null;
-                    
-                    // Method 1: Try to get from dataset on img
-                    const imgElement = current.slideNode.querySelector('.gslide-image img');
-                    if (imgElement && imgElement.dataset && imgElement.dataset.imageId) {
-                        imageId = imgElement.dataset.imageId;
-                    }
-                    
-                    // Method 2: Try to get from dataset on anchor
-                    if (!imageId) {
-                        const anchorElement = current.slideNode.querySelector('a');
-                        if (anchorElement && anchorElement.dataset && anchorElement.dataset.imageId) {
-                            imageId = anchorElement.dataset.imageId;
-                        }
-                    }
-                    
-                    // Method 3: Try to parse from src attribute
-                    if (!imageId) {
-                        const img = current.slideNode.querySelector('.gslide-image img');
-                        if (img && img.src) {
-                            const srcMatch = img.src.match(/\/([^\/]+)\.(png|jpg|jpeg|gif|webp)$/i);
-                            if (srcMatch && srcMatch[1]) {
-                                imageId = srcMatch[1];
-                            }
-                        }
-                    }
-                    
-                    // Method 4: Try to get from description title
-                    if (!imageId) {
-                        const title = current.slideNode.querySelector('.gslide-title');
-                        if (title && title.textContent) {
-                            // Search the imageDetails to find a match by title
-                            for (const imgId in imageDetails[currentAlbumId]) {
-                                if (imageDetails[currentAlbumId][imgId].title === title.textContent.trim()) {
-                                    imageId = imgId;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (imageId && currentAlbumId) {
-                        // Update URL without reloading page
-                        const newUrl = new URL(window.location);
-                        newUrl.searchParams.set('album', currentAlbumId);
-                        newUrl.searchParams.set('image', imageId);
-                        history.replaceState({}, '', newUrl);
-                        
-                        // Update document title with image name
-                        updateDocumentTitle('image', currentAlbumId, imageId);
-                        console.log('Title updated to:', document.title, 'for image:', imageId);
-                    }
-                }
-            };
-            
-            // First try using the direct method with a more thorough approach
-            updateUrlAndTitleWithCurrentImage();
-            
-            // Also run it after a short delay to ensure DOM elements are fully loaded
-            setTimeout(updateUrlAndTitleWithCurrentImage, 100);
-        });
-        
-        // When lightbox opens, update URL with the current image
-        lightbox.on('open', () => {
             setTimeout(() => {
-                const currentSlide = document.querySelector('.gslide.current');
-                const imageUrl = currentSlide?.querySelector('img')?.src;
-                const slideTitle = currentSlide?.querySelector('.gslide-title')?.textContent;
-                
-                let imageId = null;
-                
-                // Method 1: Try to extract from URL
-                if (imageUrl) {
-                    const imageMatch = imageUrl.match(/\/([^\/]+)\.(png|jpg|jpeg|gif|webp)$/i);
-                    if (imageMatch && imageMatch[1]) {
-                        imageId = imageMatch[1];
-                    }
-                }
-                
-                // Method 2: Try to find by title
-                if (!imageId && slideTitle && currentAlbumId && imageDetails[currentAlbumId]) {
-                    for (const imgId in imageDetails[currentAlbumId]) {
-                        if (imageDetails[currentAlbumId][imgId].title === slideTitle.trim()) {
-                            imageId = imgId;
-                            break;
-                        }
-                    }
-                }
-                
-                // Method 3: Try to extract from data attribute
-                if (!imageId) {
-                    const imgElement = currentSlide?.querySelector('img');
-                    if (imgElement && imgElement.dataset && imgElement.dataset.imageId) {
-                        imageId = imgElement.dataset.imageId;
-                    }
-                }
-                
-                if (imageId && currentAlbumId) {
-                    const newUrl = new URL(window.location);
-                    newUrl.searchParams.set('album', currentAlbumId);
-                    newUrl.searchParams.set('image', imageId);
-                    history.replaceState({}, '', newUrl);
-                    
-                    // Update document title with image name
-                    updateDocumentTitle('image', currentAlbumId, imageId);
-                    console.log('Lightbox open: Title updated to:', document.title, 'for image:', imageId);
-                }
+                addCustomButtons();
+                updateUrlAndTitle();
             }, 100);
         });
         
@@ -201,7 +177,86 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateDocumentTitle('album', currentAlbumId);
         });
         
-        console.log('GLightbox initialized with buttons and URL updating');
+        console.log('GLightbox initialized with custom buttons');
+    };
+
+    const addCustomButtons = () => {
+        // Remove existing custom buttons to avoid duplicates
+        const existingButtons = document.querySelectorAll('.custom-download-btn, .custom-share-btn');
+        existingButtons.forEach(btn => btn.remove());
+
+        const currentSlide = document.querySelector('.gslide.current');
+        if (!currentSlide) return;
+
+        const toolbar = currentSlide.querySelector('.gslide-toolbar') || 
+                       currentSlide.querySelector('.glightbox-clean') ||
+                       currentSlide;
+
+        const imageUrl = currentSlide.querySelector('img')?.src;
+        const slideTitle = currentSlide.querySelector('.gslide-title')?.textContent;
+
+        if (imageUrl) {
+            // Get the high-res image URL
+            const highResUrl = imageUrl.replace('/lowres/', '/');
+            
+            const downloadBtn = createDownloadButton(highResUrl, slideTitle);
+            const shareBtn = createShareButton(highResUrl, slideTitle);
+
+            // Try to add buttons to toolbar, or create one
+            if (toolbar && toolbar !== currentSlide) {
+                toolbar.appendChild(downloadBtn);
+                toolbar.appendChild(shareBtn);
+            } else {
+                // Create a custom toolbar
+                let customToolbar = currentSlide.querySelector('.custom-toolbar');
+                if (!customToolbar) {
+                    customToolbar = document.createElement('div');
+                    customToolbar.className = 'custom-toolbar';
+                    currentSlide.appendChild(customToolbar);
+                }
+                customToolbar.appendChild(downloadBtn);
+                customToolbar.appendChild(shareBtn);
+            }
+        }
+    };
+
+    const updateUrlAndTitle = () => {
+        const currentSlide = document.querySelector('.gslide.current');
+        if (!currentSlide) return;
+
+        const imageUrl = currentSlide.querySelector('img')?.src;
+        const slideTitle = currentSlide.querySelector('.gslide-title')?.textContent;
+        
+        let imageId = null;
+        
+        // Method 1: Try to extract from URL
+        if (imageUrl) {
+            const imageMatch = imageUrl.match(/\/([^\/]+)\.(png|jpg|jpeg|gif|webp)$/i);
+            if (imageMatch && imageMatch[1]) {
+                imageId = imageMatch[1];
+            }
+        }
+        
+        // Method 2: Try to find by title
+        if (!imageId && slideTitle && currentAlbumId && imageDetails[currentAlbumId]) {
+            for (const imgId in imageDetails[currentAlbumId]) {
+                if (imageDetails[currentAlbumId][imgId].title === slideTitle.trim()) {
+                    imageId = imgId;
+                    break;
+                }
+            }
+        }
+        
+        if (imageId && currentAlbumId) {
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('album', currentAlbumId);
+            newUrl.searchParams.set('image', imageId);
+            history.replaceState({}, '', newUrl);
+            
+            // Update document title with image name
+            updateDocumentTitle('image', currentAlbumId, imageId);
+            console.log('Title updated to:', document.title, 'for image:', imageId);
+        }
     };
 
     const preloadNextImage = (elements, nextIndex) => {
@@ -329,7 +384,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.dataset.gallery = `album-${albumId}`;
             link.dataset.title = details.title || '';
             link.dataset.description = details.description || '';
-            link.dataset.download = imageUrl; // Enable download button functionality
             link.dataset.imageId = imageId; // Store image ID for URL updating
             
             // Add data attributes to img for easier slide detection
@@ -385,7 +439,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         link.dataset.glightbox = 'gallery';
         link.dataset.title = details.title || '';
         link.dataset.description = details.description || '';
-        link.dataset.download = imageUrl; // Enable download button functionality
         link.dataset.imageId = imageId; // Store image ID for URL updating
         
         link.appendChild(img);
@@ -482,17 +535,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    // Add CSS for GLightbox buttons
-    const addGLightboxStyles = () => {
+    // Add CSS for custom buttons and toast notifications
+    const addCustomStyles = () => {
         const style = document.createElement('style');
         style.textContent = `
+            .custom-download-btn, .custom-share-btn {
+                position: absolute;
+                top: 20px;
+                background: rgba(0, 0, 0, 0.7);
+                border: none;
+                color: white;
+                font-size: 20px;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                cursor: pointer;
+                z-index: 9999;
+                transition: background-color 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .custom-download-btn {
+                right: 70px;
+            }
+            
+            .custom-share-btn {
+                right: 20px;
+            }
+            
+            .custom-download-btn:hover, .custom-share-btn:hover {
+                background: rgba(0, 0, 0, 0.9);
+            }
+            
+            .custom-toolbar {
+                position: absolute;
+                top: 0;
+                right: 0;
+                z-index: 9999;
+            }
+            
+            .toast-notification {
+                position: fixed;
+                top: 50px;
+                right: 20px;
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 5px;
+                z-index: 10000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .toast-notification.show {
+                transform: translateX(0);
+            }
+            
             .gclose {
                 display: block !important;
             }
             .gnext, .gprev {
-                display: block !important;
-            }
-            .gdownload, .gfullscreen, .gzoom-in, .gzoom-out, .gshare {
                 display: block !important;
             }
             .glightbox-container .gslide-description {
@@ -504,15 +608,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             .glightbox-mobile .glightbox-container .gslide-description {
                 background: rgba(0, 0, 0, 0.7);
             }
-            .glightbox-button-hidden {
-                display: none !important;
-            }
         `;
         document.head.appendChild(style);
     };
 
     // Initialization
-    addGLightboxStyles();
+    addCustomStyles();
     await loadLookupData();
     await handleRouteChange();
     setLayout(currentLayout);
