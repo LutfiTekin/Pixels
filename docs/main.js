@@ -486,18 +486,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // ------ THIS SECTION IS CHANGED ------
     const handleRouteChange = async () => {
         const params = new URLSearchParams(window.location.search);
         const albumParam = params.get('album');
         const imageParam = params.get('image');
 
         if (albumParam) {
+            // Always load album data from its own album.json, regardless of lookup.json
             if (!albums[albumParam]) {
                 await loadAlbumData(albumParam);
             }
             renderGallery(albumParam);
             if (imageParam && imageDetails[albumParam]?.[imageParam]) {
-                // Wait for gallery to be rendered, then open the specific image
                 setTimeout(() => {
                     const links = document.querySelectorAll(`a[data-glightbox="gallery"]`);
                     for (let i = 0; i < links.length; i++) {
@@ -509,31 +510,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }, 200);
             }
         } else if (imageParam) {
-            // Try to find which album contains this image
+            // Only use lookup.json to find album for a single image
             await loadLookupData();
+            let found = false;
             for (const albumId in lookup) {
                 if (lookup[albumId].includes(imageParam)) {
                     await loadAlbumData(albumId);
                     renderSingleImage(imageParam);
-                    return;
+                    found = true;
+                    break;
                 }
             }
-            galleryContainer.innerHTML = '<p>Image not found.</p>';
-            // Reset title to default if image not found
-            document.title = defaultTitle;
-        } else {
-            await loadLookupData();
-            const albumIds = Object.keys(lookup);
-            if (albumIds.length > 0) {
-                const firstAlbumId = albumIds[0];
-                await loadAlbumData(firstAlbumId);
-                renderGallery(firstAlbumId);
-            } else {
-                // Reset title to default if no albums found
+            if (!found) {
+                galleryContainer.innerHTML = '<p>Image not found.</p>';
                 document.title = defaultTitle;
             }
+        } else {
+            // No album or image specified: load a default album
+            const defaultAlbumId = "melodycards";
+            await loadAlbumData(defaultAlbumId);
+            renderGallery(defaultAlbumId);
         }
     };
+    // ------ END OF CHANGE ------
 
     // Check if GLightbox is loaded
     if (typeof GLightbox === 'undefined') {
