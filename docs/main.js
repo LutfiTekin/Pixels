@@ -558,7 +558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             .custom-download-btn {
-                right: 100px;
+                right: 120px;
             }
             
             .custom-share-btn {
