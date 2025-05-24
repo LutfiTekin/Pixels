@@ -13,26 +13,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     let favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     let currentLayout = localStorage.getItem('layout') || 'grid';
     let isShowingFavorites = false;
-    const defaultTitle = 'Static Image Gallery'; // Store the default title
+    const defaultTitle = 'Static Image Gallery';
 
     // Function to update the document title based on context
     const updateDocumentTitle = (context, albumId, imageId) => {
         if (context === 'album' && albumId && albums[albumId]) {
-            // Set title to album name when viewing an album
             document.title = `${albums[albumId].title || albumId} - Image Gallery`;
-            console.log('Title set to album:', document.title);
         } else if (context === 'image' && albumId && imageId && imageDetails[albumId]?.[imageId]) {
-            // Set title to image name when viewing a specific image
             document.title = `${imageDetails[albumId][imageId].title || imageId} - Image Gallery`;
-            console.log('Title set to image:', document.title);
         } else {
-            // Default title when no specific context
             document.title = defaultTitle;
-            console.log('Title set to default:', document.title);
         }
     };
 
-    // Function to create custom download button
+    // Create custom download button
     const createDownloadButton = (imageUrl, imageName) => {
         const downloadBtn = document.createElement('button');
         downloadBtn.className = 'custom-download-btn';
@@ -53,15 +47,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
             } catch (error) {
-                console.error('Download failed:', error);
-                // Fallback: open image in new tab
                 window.open(imageUrl, '_blank');
             }
         };
         return downloadBtn;
     };
 
-    // Function to create custom share button
+    // Create custom share button (with direct link)
     const createShareButton = (imageUrl, imageTitle) => {
         const shareBtn = document.createElement('button');
         shareBtn.className = 'custom-share-btn';
@@ -71,22 +63,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.preventDefault();
             e.stopPropagation();
 
-            // Find the albumId and imageId from the imageUrl
-            // albums/{albumId}/{imageId}.png
-            let albumId = null;
-            let imageId = null;
+            let albumId = null, imageId = null;
             const match = imageUrl.match(/albums\/([^/]+)\/([^/.]+)\.(png|jpg|jpeg|webp|gif)/i);
             if (match) {
                 albumId = match[1];
                 imageId = match[2];
             }
-
-            // Build a direct link
             let directUrl = window.location.origin + window.location.pathname;
             if (albumId && imageId) {
                 directUrl += `?album=${encodeURIComponent(albumId)}&image=${encodeURIComponent(imageId)}`;
             }
-
             const shareData = {
                 title: imageTitle || 'Image from Gallery',
                 text: `Check out this image: ${imageTitle || 'Untitled'}`,
@@ -97,18 +83,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (navigator.share) {
                     await navigator.share(shareData);
                 } else {
-                    // Fallback: copy to clipboard
                     await navigator.clipboard.writeText(directUrl);
                     showToast('Image URL copied to clipboard!');
                 }
-            } catch (error) {
-                console.error('Share failed:', error);
-                // Final fallback: copy to clipboard manually
+            } catch {
                 try {
                     await navigator.clipboard.writeText(directUrl);
                     showToast('Image URL copied to clipboard!');
-                } catch (clipboardError) {
-                    console.error('Clipboard access failed:', clipboardError);
+                } catch {
                     showToast('Unable to share. Try copying the URL manually.');
                 }
             }
@@ -116,33 +98,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         return shareBtn;
     };
 
-
-    // Function to show toast notifications
+    // Show toast notifications
     const showToast = (message) => {
         const toast = document.createElement('div');
         toast.className = 'toast-notification';
         toast.textContent = message;
         document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 100);
-
+        setTimeout(() => { toast.classList.add('show'); }, 100);
         setTimeout(() => {
             toast.classList.remove('show');
-            setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 300);
+            setTimeout(() => { document.body.removeChild(toast); }, 300);
         }, 3000);
     };
 
-    const initLightbox = () => {
-        // Destroy existing lightbox instance if it exists
-        if (lightbox) {
-            lightbox.destroy();
-        }
+    // Place custom buttons at the bottom above the caption
+    const addCustomButtons = () => {
+        const existingButtons = document.querySelectorAll('.custom-download-btn, .custom-share-btn');
+        existingButtons.forEach(btn => btn.remove());
+        const currentSlide = document.querySelector('.gslide.current');
+        if (!currentSlide) return;
 
-        // Initialize GLightbox on all gallery links
+        const imageUrl = currentSlide.querySelector('img')?.src;
+        const slideTitle = currentSlide.querySelector('.gslide-title')?.textContent;
+
+        if (imageUrl) {
+            const highResUrl = imageUrl.replace('/lowres/', '/');
+            const downloadBtn = createDownloadButton(highResUrl, slideTitle);
+            const shareBtn = createShareButton(highResUrl, slideTitle);
+
+            // Place toolbar above the caption at the bottom
+            const description = currentSlide.querySelector('.gslide-description');
+            let customToolbar = currentSlide.querySelector('.custom-toolbar');
+            if (!customToolbar) {
+                customToolbar = document.createElement('div');
+                customToolbar.className = 'custom-toolbar';
+                if (description) {
+                    description.parentNode.insertBefore(customToolbar, description);
+                } else {
+                    currentSlide.appendChild(customToolbar);
+                }
+            }
+            customToolbar.innerHTML = '';
+            customToolbar.appendChild(downloadBtn);
+            customToolbar.appendChild(shareBtn);
+        }
+    };
+
+    // Initialize GLightbox with events
+    const initLightbox = () => {
+        if (lightbox) lightbox.destroy();
         lightbox = GLightbox({
             selector: 'a[data-glightbox]',
             touchNavigation: true,
@@ -157,108 +161,37 @@ document.addEventListener('DOMContentLoaded', async () => {
                 fade: { in: 'fadeIn', out: 'fadeOut' },
                 zoom: { in: 'zoomIn', out: 'zoomOut' }
             },
-            // Explicitly define buttons to display (only standard ones)
             moreLength: 0,
-            slideExtraAttributes: {
-                poster: ''
-            },
+            slideExtraAttributes: { poster: '' },
             elements: null,
-            // Show navigation arrows
             prevImg: true,
             nextImg: true
         });
-
-        // Add custom buttons after lightbox opens
-        lightbox.on('open', () => {
-            setTimeout(() => {
-                addCustomButtons();
-                updateUrlAndTitle();
-            }, 100);
-        });
-
-        // Add event listeners for URL updating and title changes
-        lightbox.on('slide_changed', ({ prev, current }) => {
-            setTimeout(() => {
-                addCustomButtons();
-                updateUrlAndTitle();
-            }, 100);
-        });
-
-        // When lightbox closes, update URL to remove image parameter
+        lightbox.on('open', () => setTimeout(() => { addCustomButtons(); updateUrlAndTitle(); }, 100));
+        lightbox.on('slide_changed', () => setTimeout(() => { addCustomButtons(); updateUrlAndTitle(); }, 100));
         lightbox.on('close', () => {
             const newUrl = new URL(window.location);
             newUrl.searchParams.delete('image');
             history.replaceState({}, '', newUrl);
-
-            // Update document title back to album name
             updateDocumentTitle('album', currentAlbumId);
             if (albums[currentAlbumId]) {
                 document.getElementById('album-title').textContent = albums[currentAlbumId].title || 'Image Gallery';
                 document.getElementById('album-description').textContent = albums[currentAlbumId].description || '';
             }
         });
-
-        console.log('GLightbox initialized with custom buttons');
     };
 
-    const addCustomButtons = () => {
-        // Remove existing custom buttons to avoid duplicates
-        const existingButtons = document.querySelectorAll('.custom-download-btn, .custom-share-btn');
-        existingButtons.forEach(btn => btn.remove());
-
-        const currentSlide = document.querySelector('.gslide.current');
-        if (!currentSlide) return;
-
-        const toolbar = currentSlide.querySelector('.gslide-toolbar') ||
-            currentSlide.querySelector('.glightbox-clean') ||
-            currentSlide;
-
-        const imageUrl = currentSlide.querySelector('img')?.src;
-        const slideTitle = currentSlide.querySelector('.gslide-title')?.textContent;
-
-        if (imageUrl) {
-            // Get the high-res image URL
-            const highResUrl = imageUrl.replace('/lowres/', '/');
-
-            const downloadBtn = createDownloadButton(highResUrl, slideTitle);
-            const shareBtn = createShareButton(highResUrl, slideTitle);
-
-            // Try to add buttons to toolbar, or create one
-            if (toolbar && toolbar !== currentSlide) {
-                toolbar.appendChild(downloadBtn);
-                toolbar.appendChild(shareBtn);
-            } else {
-                // Create a custom toolbar
-                let customToolbar = currentSlide.querySelector('.custom-toolbar');
-                if (!customToolbar) {
-                    customToolbar = document.createElement('div');
-                    customToolbar.className = 'custom-toolbar';
-                    currentSlide.appendChild(customToolbar);
-                }
-                customToolbar.appendChild(downloadBtn);
-                customToolbar.appendChild(shareBtn);
-            }
-        }
-    };
-
+    // Update URL and title on slide change
     const updateUrlAndTitle = () => {
         const currentSlide = document.querySelector('.gslide.current');
         if (!currentSlide) return;
-
         const imageUrl = currentSlide.querySelector('img')?.src;
         const slideTitle = currentSlide.querySelector('.gslide-title')?.textContent;
-
         let imageId = null;
-
-        // Method 1: Try to extract from URL
         if (imageUrl) {
             const imageMatch = imageUrl.match(/\/([^\/]+)\.(png|jpg|jpeg|gif|webp)$/i);
-            if (imageMatch && imageMatch[1]) {
-                imageId = imageMatch[1];
-            }
+            if (imageMatch && imageMatch[1]) imageId = imageMatch[1];
         }
-
-        // Method 2: Try to find by title
         if (!imageId && slideTitle && currentAlbumId && imageDetails[currentAlbumId]) {
             for (const imgId in imageDetails[currentAlbumId]) {
                 if (imageDetails[currentAlbumId][imgId].title === slideTitle.trim()) {
@@ -267,23 +200,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         }
-
         if (imageId && currentAlbumId) {
             const newUrl = new URL(window.location);
             newUrl.searchParams.set('album', currentAlbumId);
             newUrl.searchParams.set('image', imageId);
             history.replaceState({}, '', newUrl);
-
-            // Update document title with image name
             updateDocumentTitle('image', currentAlbumId, imageId);
-            console.log('Title updated to:', document.title, 'for image:', imageId);
-        }
-    };
-
-    const preloadNextImage = (elements, nextIndex) => {
-        if (elements && elements[nextIndex]) {
-            const nextImage = new Image();
-            nextImage.src = elements[nextIndex].href;
         }
     };
 
@@ -297,7 +219,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toggleFavorite = (albumId, imageId, button) => {
         const favoriteKey = `${albumId}-${imageId}`;
         const isFavorite = favorites.includes(favoriteKey);
-
         if (isFavorite) {
             favorites = favorites.filter(fav => fav !== favoriteKey);
             button.classList.remove('favorited');
@@ -306,14 +227,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             button.classList.add('favorited');
         }
         localStorage.setItem('favorites', JSON.stringify(favorites));
-        if (isShowingFavorites) {
-            renderGallery(currentAlbumId, true);
-        }
+        if (isShowingFavorites) renderGallery(currentAlbumId, true);
     };
 
-    const isImageFavorite = (albumId, imageId) => {
-        return favorites.includes(`${albumId}-${imageId}`);
-    };
+    const isImageFavorite = (albumId, imageId) => favorites.includes(`${albumId}-${imageId}`);
 
     const filterAndSortImages = (albumImages, albumId) => {
         let filteredImages = albumImages;
@@ -337,7 +254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else if (sortValue === 'random') {
             filteredImages.sort(() => Math.random() - 0.5);
         }
-
         return filteredImages;
     };
 
@@ -356,11 +272,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // Update document title with album name
         updateDocumentTitle('album', albumId);
         document.getElementById('album-title').textContent = albumData.title || 'Image Gallery';
         document.getElementById('album-description').textContent = albumData.description || '';
-
 
         const filteredAndSortedImages = filterAndSortImages(albumData.images, albumId);
 
@@ -385,9 +299,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             img.src = thumbUrl;
             img.alt = details.title || '';
             img.classList.add('loading');
-            img.onload = () => {
-                img.classList.remove('loading');
-            };
+            img.onload = () => img.classList.remove('loading');
 
             const overlay = document.createElement('div');
             overlay.classList.add('overlay');
@@ -408,9 +320,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.dataset.gallery = `album-${albumId}`;
             link.dataset.title = details.title || '';
             link.dataset.description = details.description || '';
-            link.dataset.imageId = imageId; // Store image ID for URL updating
+            link.dataset.imageId = imageId;
 
-            // Add data attributes to img for easier slide detection
             img.dataset.imageId = imageId;
             img.dataset.albumId = albumId;
 
@@ -421,10 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             galleryContainer.appendChild(galleryItem);
         });
 
-        // Initialize lightbox after all elements are added to DOM
-        setTimeout(() => {
-            initLightbox();
-        }, 100);
+        setTimeout(() => { initLightbox(); }, 100);
     };
 
     const renderSingleImage = async (imageId) => {
@@ -435,20 +343,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 break;
             }
         }
-
         if (!foundAlbumId || !imageDetails[foundAlbumId]?.[imageId]) {
             galleryContainer.innerHTML = '<p>Image not found.</p>';
             return;
         }
-
         currentAlbumId = foundAlbumId;
         const imageUrl = `albums/${foundAlbumId}/${imageId}.png`;
         const thumbUrl = `albums/${foundAlbumId}/lowres/${imageId}.png`;
         const details = imageDetails[foundAlbumId][imageId];
 
-        // Update document title with image name
         updateDocumentTitle('image', foundAlbumId, imageId);
-
         galleryContainer.innerHTML = '';
 
         const galleryItem = document.createElement('div');
@@ -463,20 +367,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         link.dataset.glightbox = 'gallery';
         link.dataset.title = details.title || '';
         link.dataset.description = details.description || '';
-        link.dataset.imageId = imageId; // Store image ID for URL updating
+        link.dataset.imageId = imageId;
 
         link.appendChild(img);
         galleryItem.appendChild(link);
         galleryContainer.appendChild(galleryItem);
 
-        // Open the lightbox automatically for single image
         setTimeout(() => {
             initLightbox();
             const glightboxLinks = document.querySelectorAll('a[data-glightbox]');
-            if (glightboxLinks.length > 0) {
-                // Trigger click on the first link to open the lightbox
-                glightboxLinks[0].click();
-            }
+            if (glightboxLinks.length > 0) glightboxLinks[0].click();
         }, 100);
     };
 
@@ -487,7 +387,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const imagesResponse = await fetch(`albums/${albumId}/images.json`);
             imageDetails[albumId] = await imagesResponse.json();
         } catch (error) {
-            console.error('Error loading album data:', error);
             galleryContainer.innerHTML = '<p>Failed to load album data.</p>';
             return false;
         }
@@ -498,9 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('lookup.json');
             lookup = await response.json();
-        } catch (error) {
-            console.error('Error loading lookup data:', error);
-        }
+        } catch (error) {}
     };
 
     const handleRouteChange = async () => {
@@ -509,10 +406,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const imageParam = params.get('image');
 
         if (albumParam) {
-            // Always load album data from its own album.json, regardless of lookup.json
-            if (!albums[albumParam]) {
-                await loadAlbumData(albumParam);
-            }
+            if (!albums[albumParam]) await loadAlbumData(albumParam);
             renderGallery(albumParam);
             if (imageParam && imageDetails[albumParam]?.[imageParam]) {
                 setTimeout(() => {
@@ -526,7 +420,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }, 200);
             }
         } else if (imageParam) {
-            // Only use lookup.json to find album for a single image
             await loadLookupData();
             let found = false;
             for (const albumId in lookup) {
@@ -542,32 +435,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.title = defaultTitle;
             }
         } else {
-            // No album or image specified: load 10 random images from lookup.json
             await loadLookupData();
-
-            // Flatten all image ids with their albumId
             let allImages = [];
             for (const [albumId, imageIds] of Object.entries(lookup)) {
                 imageIds.forEach(imageId => {
                     allImages.push({ albumId, imageId });
                 });
             }
-            // Shuffle and pick 10 random images
             allImages = allImages.sort(() => Math.random() - 0.5).slice(0, 10);
-
-            // Load album data for all involved albums (skip dupes)
             const involvedAlbums = [...new Set(allImages.map(img => img.albumId))];
             for (const albumId of involvedAlbums) {
-                if (!albums[albumId]) {
-                    await loadAlbumData(albumId);
-                }
+                if (!albums[albumId]) await loadAlbumData(albumId);
             }
-
-            // Render the 10 random images
             galleryContainer.innerHTML = '';
             document.getElementById('album-title').textContent = 'Random Images';
             document.getElementById('album-description').textContent = 'A random selection from all albums';
-
             allImages.forEach(({ albumId, imageId }) => {
                 const details = imageDetails[albumId]?.[imageId] || {};
                 const imageUrl = `albums/${albumId}/${imageId}.png`;
@@ -602,27 +484,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 galleryItem.appendChild(overlay);
                 galleryContainer.appendChild(galleryItem);
             });
-
-            setTimeout(() => {
-                initLightbox();
-            }, 100);
+            setTimeout(() => { initLightbox(); }, 100);
         }
     };
 
-    // Check if GLightbox is loaded
-    if (typeof GLightbox === 'undefined') {
-        console.error('GLightbox library not loaded!');
-        galleryContainer.innerHTML = '<p>Error: GLightbox library not loaded. Please check your internet connection and refresh the page.</p>';
-        return;
-    }
-
-    // Add CSS for custom buttons and toast notifications
+    // Add CSS for custom toolbar at the bottom above the caption
     const addCustomStyles = () => {
         const style = document.createElement('style');
         style.textContent = `
+            .custom-toolbar {
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+                padding: 0 16px 10px 16px;
+                position: relative;
+                z-index: 9999;
+            }
             .custom-download-btn, .custom-share-btn {
-                position: absolute;
-                top: 20px;
                 background: rgba(0, 0, 0, 0.7);
                 border: none;
                 color: white;
@@ -631,32 +509,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 height: 40px;
                 border-radius: 50%;
                 cursor: pointer;
-                z-index: 9999;
                 transition: background-color 0.3s ease;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                position: static;
             }
-            
-            .custom-download-btn {
-                right: 120px;
-            }
-            
-            .custom-share-btn {
-                right: 80px;
-            }
-            
             .custom-download-btn:hover, .custom-share-btn:hover {
-                background: rgba(0, 0, 0, 0.9);
+                background: rgba(0,0,0,0.9);
             }
-            
-            .custom-toolbar {
-                position: absolute;
-                top: 0;
-                right: 0;
-                z-index: 9999;
+            @media (max-width: 600px) {
+                .custom-download-btn, .custom-share-btn {
+                    width: 32px;
+                    height: 32px;
+                    font-size: 16px;
+                }
+                .custom-toolbar {
+                    gap: 8px;
+                    padding-bottom: 8px;
+                }
             }
-            
             .toast-notification {
                 position: fixed;
                 top: 50px;
@@ -669,25 +541,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 transform: translateX(100%);
                 transition: transform 0.3s ease;
             }
-            
             .toast-notification.show {
                 transform: translateX(0);
-            }
-            
-            .gclose {
-                display: block !important;
-            }
-            .gnext, .gprev {
-                display: block !important;
-            }
-            .glightbox-container .gslide-description {
-                background: rgba(0, 0, 0, 0.7);
-            }
-            .glightbox-clean .gslide-description {
-                background: rgba(0, 0, 0, 0.7);
-            }
-            .glightbox-mobile .glightbox-container .gslide-description {
-                background: rgba(0, 0, 0, 0.7);
             }
         `;
         document.head.appendChild(style);
@@ -700,37 +555,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     setLayout(currentLayout);
     layoutSelector.value = currentLayout;
 
-    // Event Listeners
     window.addEventListener('popstate', handleRouteChange);
-
-    layoutSelector.addEventListener('change', (event) => {
-        setLayout(event.target.value);
-    });
-
-    searchInput.addEventListener('input', () => {
-        renderGallery(currentAlbumId, true);
-    });
-
-    sortOptions.addEventListener('change', () => {
-        renderGallery(currentAlbumId, true);
-    });
-
+    layoutSelector.addEventListener('change', (event) => setLayout(event.target.value));
+    searchInput.addEventListener('input', () => renderGallery(currentAlbumId, true));
+    sortOptions.addEventListener('change', () => renderGallery(currentAlbumId, true));
     favoritesToggle.addEventListener('click', () => {
         isShowingFavorites = !isShowingFavorites;
         favoritesToggle.textContent = isShowingFavorites ? 'Show All' : 'Show Favorites';
         renderGallery(currentAlbumId, true);
     });
 
-    // Add service worker registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./service-worker.js')
-                .then(registration => {
-                    console.log('ServiceWorker registration successful');
-                })
-                .catch(error => {
-                    console.log('ServiceWorker registration failed:', error);
-                });
+                .then(() => {})
+                .catch(() => {});
         });
     }
 });
