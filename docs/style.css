@@ -153,3 +153,73 @@ header h1 {
 .hidden {
     display: none !important;
 }
+
+select, input[type="search"] {
+    background: rgba(30, 30, 40, 0.98);
+    border: 1.5px solid #222;
+    color: #fff;
+    font-size: 1em;
+    padding: 7px 12px;
+    border-radius: 6px;
+    margin: 0 2px;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+    outline: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    appearance: none;
+}
+select:focus, input[type="search"]:focus {
+    border-color: #4f8cff;
+    background: #232333;
+    color: #fff;
+}
+select option {
+    background: #232333;
+    color: #fff;
+}
+input[type="search"]::placeholder {
+    color: #aaa;
+    opacity: 1;
+}
+
+@media (prefers-color-scheme: light) {
+    select, input[type="search"] {
+        background: #fff;
+        color: #333;
+        border: 1.5px solid #ddd;
+    }
+    select:focus, input[type="search"]:focus {
+        border-color: #4f8cff;
+        background: #f4f7fb;
+        color: #333;
+    }
+    select option {
+        background: #f4f7fb;
+        color: #333;
+    }
+}
+
+#favorites-toggle {
+    background: linear-gradient(90deg, #232333 70%, #293f5a 100%);
+    color: #ffdf68;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    margin-left: 5px;
+}
+#favorites-toggle:hover,
+#favorites-toggle:focus {
+    background: linear-gradient(90deg, #3b5398 60%, #ffdf68 130%);
+    color: #232333;
+}
+
+@media (max-width: 600px) {
+    select, input[type="search"], #favorites-toggle {
+        font-size: 0.95em;
+        padding: 6px 8px;
+    }
+}
