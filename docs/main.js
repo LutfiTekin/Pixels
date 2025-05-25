@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const response = await fetch('lookup.json');
             lookup = await response.json();
-        } catch (error) {}
+        } catch (error) { }
     };
 
     const handleRouteChange = async () => {
@@ -568,8 +568,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('./service-worker.js')
-                .then(() => {})
-                .catch(() => {});
+                .then(() => { })
+                .catch(() => { });
         });
     }
 });
