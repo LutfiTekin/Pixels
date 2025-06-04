@@ -13,6 +13,10 @@ if ! command -v jq &> /dev/null; then
   echo "❌ jq is required but not installed."
   exit 1
 fi
+if ! command -v convert &> /dev/null; then
+  echo "❌ ImageMagick 'convert' is required. Install it with: brew install imagemagick"
+  exit 1
+fi
 
 # ── Ask for album id ──────────────────────────────────────────────────
 read -p "Album ID to add images: " album_id
@@ -54,9 +58,13 @@ while IFS='>' read -r original new; do
   images_json="$(jq --arg id "$id" --arg title "$title" '. + {($id): {title: $title}}' <<<"$images_json")"
   new_album_images+=("\"$id\"")
 
-  # move the file
+  # move the file and generate thumbnail
   if [[ -f "$script_dir/$new" ]]; then
     mv "$script_dir/$new" "$album_dir/"
+    # Per-image thumbnail (immediate)
+    mkdir -p "$album_dir/lowres"
+    convert "$album_dir/$new" -resize 25% "$album_dir/lowres/$new"
+    echo "🖼️  Added $new and generated thumbnail."
   fi
 done < "$script_dir/renamed_images.txt"
 
@@ -86,15 +94,14 @@ jq --arg id "$album_id" --argjson imgs "$lookup_imgs" '. + {($id): $imgs}' "$loo
   && mv "${lookup_file}.tmp" "$lookup_file"
 
 echo "✅ Added new images to album '$album_id': [${new_album_images[*]}]"
-read -p "Run generate_thumbnails.sh now? [y/N]: " yn
+
+read -p "Run generate_thumbnails.sh for ALL albums now? [y/N]: " yn
 case "$yn" in
     [Yy]* ) 
         "$script_dir/generate_thumbnails.sh"
         echo "🎉 Done."
         ;;
     * )
-        echo "Skipped thumbnail generation."
+        echo "Skipped full thumbnail generation."
         ;;
 esac
-
-echo "🎉 Done."
