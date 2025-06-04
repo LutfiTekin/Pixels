@@ -1,200 +1,263 @@
 {
-    "brothers_in_arms": {
-        "title": "Brothers In Arms"
-    },
-    "bitch": {
-        "title": "Bitch"
-    },
-    "born_in_the_usa": {
-        "title": "Born In The U.S.A."
-    },
-    "99_problems": {
-        "title": "99 Problems"
-    },
-    "eat_the_rich": {
-        "title": "Eat The Rich"
-    },
-    "are_friends_electric": {
-        "title": "Are Friends Electric"
-    },
-    "highway_to_hell": {
-        "title": "Highway To Hell"
-    },
-    "hotel_california": {
-        "title": "Hotel California"
-    },
-    "aint_no_sunshine": {
-        "title": "Ain't No Sunshine"
-    },
-    "hells_bells": {
-        "title": "Hells Bells"
-    },
-    "all_along_the_watchtower": {
-        "title": "All Along The Watchtower"
-    },
-    "knockin_on_heavens_door": {
-        "title": "Knockin' On Heaven's Door"
-    },
-    "lady_in_red": {
-        "title": "Lady In Red"
-    },
-    "fear_of_the_dark": {
-        "title": "Fear Of The Dark"
-    },
-    "money_for_nothing": {
-        "title": "Money For Nothing"
-    },
-    "mad_world": {
-        "title": "Mad World"
-    },
-    "lonely_boy": {
-        "title": "Lonely Boy"
-    },
-    "maneater": {
-        "title": "Maneater"
-    },
-    "miles_away": {
-        "title": "Miles Away"
-    },
-    "night_moves": {
-        "title": "Night Moves"
-    },
-    "play_with_fire": {
-        "title": "Play With Fire"
-    },
-    "paint_it_black": {
-        "title": "Paint It Black"
-    },
-    "my_way": {
-        "title": "My Way"
-    },
-    "simple_man": {
-        "title": "Simple Man"
-    },
-    "rumour_has_it": {
-        "title": "Rumour Has It"
-    },
-    "somebody_that_i_used_to_know": {
-        "title": "Somebody That I Used To Know"
-    },
-    "shape_of_my_heart": {
-        "title": "Shape Of My Heart"
-    },
-    "someone_new": {
-        "title": "Someone New"
-    },
-    "stairway_to_heaven": {
-        "title": "Stairway To Heaven"
-    },
-    "starman": {
-        "title": "Starman"
-    },
-    "the_devil_you_know": {
-        "title": "The Devil You Know"
-    },
-    "telephone": {
-        "title": "Telephone"
-    },
-    "the_winner_takes_it_all": {
-        "title": "The Winner Takes It All"
-    },
-    "time": {
-        "title": "Time"
-    },
-    "the_man_who_sold_the_world": {
-        "title": "The Man Who Sold The World"
-    },
-    "under_pressure": {
-        "title": "Under Pressure"
-    },
-    "we_didnt_start_the_fire": {
-        "title": "We Didn't Start The Fire"
-    },
-    "you_and_me_and_the_devil_makes_three": {
-        "title": "You And Me And The Devil Makes Three"
-    },
-    "trouble_is_a_friend": {
-        "title": "Trouble Is A Friend"
-    },
-    "wicked_ones": {
-        "title": "Wicked Ones"
-    },
-    "comfortably_numb": {
-        "title": "Comfortably Numb"
-    },
-    "wanted_dead_or_alive": {
-        "title": "Wanted Dead Or Alive"
-    },
-    "cold_as_ice": {
-        "title": "Cold As Ice"
-    },
-    "fast_car": {
-        "title": "Fast Car"
-    },
-    "time_in_a_bottle": {
-        "title": "Time In A Bottle"
-    },
-    "half_a_world_away": {
-        "title": "Half A World Away"
-    },
-    "pop_muzik": {
-        "title": "Pop Muzik"
-    },
-    "in_the_ghetto": {
-        "title": "In The Ghetto"
-    },
-    "its_a_mans_mans_mans_world": {
-        "title": "It's A Man's Man's Man's World"
-    },
-    "no_milk_today": {
-        "title": "No Milk Today"
-    },
-    "take_me_out": {
-        "title": "Take Me Out"
-    },
-    "aint_no_mountain_high_enough": {
-        "title": "Ain't No Mountain High Enough"
-    },
-    "here_comes_the_sun": {
-        "title": "Here Comes The Sun"
-    },
-    "rockstar": {
-        "title": "Rockstar"
-    },
-    "renegades": {
-        "title": "Renegades"
-    },
-    "dream_on": {
-        "title": "Dream On"
-    },
-    "set_fire_to_the_rain": {
-        "title": "Set Fire To The Rain"
-    },
-    "uptown_girl": {
-        "title": "Uptown Girl"
-    },
-    "where_is_my_mind": {
-        "title": "Where Is My Mind"
-    },
-    "take_me_to_church": {
-        "title": "Take Me To Church"
-    },
-    "twist_in_my_sobriety": {
-        "title": "Twist In My Sobriety"
-    },
-    "young_folks": {
-        "title": "Young Folks"
-    },
-    "boulevard_of_broken_dreams": {
-        "title": "Boulevard Of Broken Dreams"
-    },
-    "down_on_the_corner": {
-        "title": "Down On The Corner"
-    },
-    "money_money_money": {
-        "title": "Money Money Money"
-    },
-    "dunyanin_en_guzel_kizi": {
-        "title": "Dunyanin En Guzel Kızı"
-    }
+  "brothers_in_arms": {
+    "title": "Brothers In Arms",
+    "description": "A testament to unwavering loyalty and shared struggle. This card signifies camaraderie forged in the crucible of hardship, where allies stand shoulder to shoulder against overwhelming odds."
+  },
+  "bitch": {
+    "title": "Bitch",
+    "description": "Unapologetically bold, this card embodies fierce independence and a refusal to back down. It represents speaking truth, even when unpopular, and asserting one's power against opposition."
+  },
+  "born_in_the_usa": {
+    "title": "Born in the U.S.A."
+  },
+  "99_problems": {
+    "title": "99 Problems",
+    "description": "When troubles mount, this card appears as a reminder that challenges are plentiful, but the core struggle often lies in overcoming one significant hurdle. It calls for perseverance and wit to navigate a sea of complications."
+  },
+  "eat_the_rich": {
+    "title": "Eat The Rich",
+    "description": "A stark commentary on societal imbalance, this card represents a desire to overturn established hierarchies. It can point to simmering resentment, calls for redistribution, or a dramatic confrontation between the privileged and the dispossessed."
+  },
+  "are_friends_electric": {
+    "title": "Are Friends Electric",
+    "description": "In a world increasingly mediated by technology, this card asks about the genuine nature of our bonds. It highlights connections that might feel artificial or unexpected, exploring how we relate to each other in a digitally-interconnected or unconventional landscape."
+  },
+  "highway_to_hell": {
+    "title": "Highway To Hell",
+    "description": "A road paved with bad intentions, this card represents a trajectory towards ruin. It warns against succumbing to destructive impulses or making choices that lead down a path with inevitable negative consequences, no matter how enticing the journey might seem."
+  },
+  "hotel_california": {
+    "title": "Hotel California",
+    "description": "A place of paradoxical beauty and captivity, this card signifies a situation you can check into, but never truly escape. It speaks of alluring circumstances that becomes binding, leaving one feeling trapped despite the outward appearance of freedom."
+  },
+  "aint_no_sunshine": {
+    "title": "Ain't No Sunshine",
+    "description": "When the light disappears, this card reflects the void left behind. It embodies the deep sense of loss and sadness that comes with the absence of a vital presence, casting a shadow over the narrative until that light returns."
+  },
+  "hells_bells": {
+    "title": "Hells Bells",
+    "description": "The sound that signals doom, this card announces the approach of something formidable and often malevolent. It serves as a dramatic warning, increasing tension and suggesting that powerful, perhaps supernatural, forces are at play."
+  },
+  "all_along_the_watchtower": {
+    "title": "All Along The Watchtower",
+    "description": "From elevated vantage points, figures watch as events unfold below, each seeing the same signs but interpreting them through their own lens. This card speaks to inevitable changes, warnings unheeded, and the varied perspectives from which destiny can be observed."
+  },
+  "knockin_on_heavens_door": {
+    "title": "Knockin' On Heaven's Door",
+    "description": "At the edge of something profound, this card embodies the journey towards a final destination or a significant transition. It can represent a search for peace, a culmination of events, or the quiet moments before crossing a critical boundary."
+  },
+  "lady_in_red": {
+    "title": "Lady In Red",
+    "description": "A figure who commands the eye, this card embodies undeniable presence and allure. Appearing in a moment of significance, she captures attention and injects passion or drama into the scene, leaving a lasting impression."
+  },
+  "fear_of_the_dark": {
+    "title": "Fear Of The Dark",
+    "description": "When shadows lengthen, this card brings forth the oldest fears. It speaks of the unknown, the hidden dangers lurking just out of sight, and the challenge of confronting the anxieties that reside in the deepest parts of the psyche."
+  },
+  "money_for_nothing": {
+    "title": "Money For Nothing",
+    "description": "Rewards received without apparent effort, this card points to windfalls, lucky breaks, or questioning conventional wisdom about earning. It can highlight situations where value seems disconnected from labor, or where critique is leveled against systems of wealth."
+  },
+  "mad_world": {
+    "title": "Mad World",
+    "description": "When reality seems bizarre and incomprehensible, this card captures the feeling of being adrift in a chaotic existence. It speaks to a perception of the world as illogical or overwhelming, leaving individuals feeling disconnected and bewildered."
+  },
+  "lonely_boy": {
+    "title": "Lonely Boy",
+    "description": "In a crowd or by himself, this card embodies the experience of solitude. It can represent physical isolation, emotional loneliness, or a period of introspection where one grapples with feelings of being disconnected from others."
+  },
+  "maneater": {
+    "title": "Maneater",
+    "description": "Charm masking danger, this card represents a force that draws others in only to consume or destroy them. It speaks of irresistible allure that leads to ruin, highlighting predatory relationships or situations where one is at risk of being devoured."
+  },
+  "miles_away": {
+    "title": "Miles Away",
+    "description": "Whether across continents or emotional divides, this card signifies a great distance. It embodies the feeling of separation, the yearning for what is far off, or the challenge of connecting across significant physical or emotional space."
+  },
+  "night_moves": {
+    "title": "Night Moves",
+    "description": "Under the cloak of night, hidden actions and youthful escapades unfold. This card speaks of things that happen away from plain sight, secret plans, or nostalgic recollections of events that transpired in the shadows or during formative years."
+  },
+  "play_with_fire": {
+    "title": "Play With Fire",
+    "description": "Engaging with known danger, this card is a stark warning about the perils of reckless behavior. It represents situations where one is willingly interacting with volatile forces, suggesting that getting burned is a very real possibility."
+  },
+  "paint_it_black": {
+    "title": "Paint It Black",
+    "description": "When grief consumes, the world loses its color. This card embodies profound sorrow and the feeling of seeing everything through the lens of loss. It represents a state where only darkness prevails, marking a period of mourning or deep despair."
+  },
+  "my_way": {
+    "title": "My Way",
+    "description": "A declaration of autonomy, this card celebrates individuality and a refusal to follow the crowd. It represents charting one's own course, making independent choices, and standing firm in one's personal convictions, even when faced with pressure to conform."
+  },
+  "simple_man": {
+    "title": "Simple Man",
+    "description": "In a world of complexity, this card finds strength in the fundamental. It represents a character or situation grounded in simple truths, valuing honesty, humility, and the quiet dignity of an uncomplicated existence."
+  },
+  "rumour_has_it": {
+    "title": "Rumour Has It",
+    "description": "Whispers in the air, this card signifies the power of unfounded stories and speculation. It represents the spread of gossip, the impact of reputation based on rumor, and the difficulty of discerning truth from fabrication in a world of buzzing innuendo."
+  },
+  "somebody_that_i_used_to_know": {
+    "title": "Somebody That I Used To Know",
+    "description": "A poignant reflection on altered bonds, this card speaks to the experience of encountering someone from the past who now feels like a stranger. It embodies the sadness of lost connection and the realization that people can change in profound ways."
+  },
+  "shape_of_my_heart": {
+    "title": "Shape Of My Heart",
+    "description": "More than outward appearance, this card delves into the hidden core of a person. It represents the true nature of one's heart, the secret motivations, or the underlying vulnerability that shapes who they are beneath the surface."
+  },
+  "someone_new": {
+    "title": "Someone New",
+    "description": "A fresh face enters the scene, bringing with them the potential for new dynamics, unexpected turns, and perhaps the spark of romance. This card represents the arrival of an individual who will impact the existing story in unforeseen ways."
+  },
+  "stairway_to_heaven": {
+    "title": "Stairway To Heaven",
+    "description": "A path leading upwards, this card embodies a journey of growth, learning, or spiritual enlightenment. It represents the process of striving towards a higher state or a significant achievement, suggesting that the ascent is as important as the destination."
+  },
+  "starman": {
+    "title": "Starman",
+    "description": "From beyond the familiar sky, a figure arrives, bringing with them new perspectives, unusual abilities, or a catalyst for change. This card signifies intervention from an outside force, often benevolent or intended to shake up the status quo."
+  },
+  "the_devil_you_know": {
+    "title": "The Devil You Know",
+    "description": "Better the devil you know than the devil you don't. This card embodies the choice to face a recognized problem or adversary, even if unpleasant, rather than stepping into the uncertainty of the unknown. It speaks to familiar struggles and predictable consequences."
+  },
+  "telephone": {
+    "title": "Telephone",
+    "description": "A device that connects worlds, this card represents the flow of information, the challenges of communication, or a pivotal message waiting to be received or sent. It can highlight misunderstandings, vital news, or the impact of technology on connection."
+  },
+  "the_winner_takes_it_all": {
+    "title": "The Winner Takes It All",
+    "description": "When the dust settles, one stands triumphant while others face defeat. This card embodies the finality of competition and the often-high price paid for ultimate victory, leaving little room for compromise or shared success."
+  },
+  "time": {
+    "title": "Time",
+    "description": "The relentless march of moments, this card speaks to the ephemeral nature of existence and the impact of time on events and individuals. It can prompt reflection on decisions made, opportunities lost, or the inevitable changes brought by the passage of days."
+  },
+  "the_man_who_sold_the_world": {
+    "title": "The Man Who Sold The World",
+    "description": "A figure shrouded in mystery, this card represents a fundamental change in identity, perhaps for gain or survival. It speaks to shedding one's past, embracing a new persona, or the unsettling feeling that someone has traded their true self for something else."
+  },
+  "under_pressure": {
+    "title": "Under Pressure",
+    "description": "When the weight of the world feels unbearable, this card embodies the experience of facing intense pressure. It represents a moment where one's limits are tested, potentially leading to collapse or a breakthrough forged in hardship."
+  },
+  "we_didnt_start_the_fire": {
+    "title": "We Didn't Start The Fire",
+    "description": "Facing a chaotic situation that wasn't their making, this card represents dealing with inherited problems or conflicts. It speaks to the feeling of being thrust into existing turmoil and grappling with the historical context or systemic issues that led to it."
+  },
+  "you_and_me_and_the_devil_makes_three": {
+    "title": "You And Me And The Devil Makes Three",
+    "description": "When a third element enters a relationship, bringing chaos or temptation, this card appears. It signifies a destructive influence, a perilous alliance, or the unsettling presence of a force that corrupts or challenges the bond between two."
+  },
+  "trouble_is_a_friend": {
+    "title": "Trouble Is A Friend",
+    "description": "For some, difficulty is not an adversary but a companion. This card represents a character or situation where trouble is embraced, navigated with surprising ease, or even sought out, highlighting an unconventional relationship with chaos and adversity."
+  },
+  "wicked_ones": {
+    "title": "Wicked Ones",
+    "description": "Operating in shades of grey or outright darkness, this card represents individuals who are mischievous, morally ambiguous, or actively embrace a wicked path. It speaks to figures who challenge norms and find camaraderie in shared defiance or questionable deeds."
+  },
+  "comfortably_numb": {
+    "title": "Comfortably Numb",
+    "description": "A veil descends, muffling the sharp edges of reality. This card embodies a state of emotional disconnection, where feelings are distant and the world feels muted. It can represent a coping mechanism or a profound sense of alienation, a quiet existence behind a barrier."
+  },
+  "wanted_dead_or_alive": {
+    "title": "Wanted Dead Or Alive",
+    "description": "With a price on their head, the subject of this card is in constant peril. It represents a situation of intense pursuit, where one is either the hunter or the hunted, navigating a world where every shadow might conceal a threat. Survival is paramount."
+  },
+  "cold_as_ice": {
+    "title": "Cold As Ice",
+    "description": "A chilling presence, this card embodies a lack of warmth, empathy, or emotional response. It represents a person or situation marked by coldness, indifference, or even cruelty, where feelings are frozen and compassion is absent."
+  },
+  "fast_car": {
+    "title": "Fast Car",
+    "description": "Windows down, the world blurring past, this card embodies the yearning for escape and the pursuit of a better life. It signifies a journey driven by dreams and a desire to leave behind limitations, representing freedom, youth, and the open road towards the unknown."
+  },
+  "time_in_a_bottle": {
+    "title": "Time In A Bottle",
+    "description": "A poignant reminder of how quickly moments slip away, this card embodies the wish to capture and hold onto time. It speaks to nostalgia, the preciousness of fleeting experiences, and the bittersweet realization that some moments, however cherished, cannot be kept forever."
+  },
+  "half_a_world_away": {
+    "title": "Half A World Away",
+    "description": "Across oceans and continents, a connection endures. This card embodies the feeling of being separated by a great distance, yet still bound by emotion or memory. It speaks to longing, the challenges of remote relationships, and the hope of bridging the gap."
+  },
+  "pop_muzik": {
+    "title": "Pop Muzik",
+    "description": "A sound that spreads like wildfire, this card represents ideas, trends, or influences that quickly gain widespread popularity. It speaks to the power of simple, catchy concepts that resonate with many, shaping the cultural landscape."
+  },
+  "in_the_ghetto": {
+    "title": "In The Ghetto",
+    "description": "Amidst challenging surroundings, a story unfolds. This card brings focus to the difficulties faced in impoverished or marginalized environments. It speaks to the impact of one's origins on their path and the systemic issues that create barriers."
+  },
+  "its_a_mans_mans_mans_world": {
+    "title": "It's A Man's Man's Man's World",
+    "description": "In a world shaped by one perspective, challenges arise for others. This card speaks to the power imbalances and inequalities that exist within a system dominated by a particular group. It highlights the struggles for recognition and influence in such an environment."
+  },
+  "no_milk_today": {
+    "title": "No Milk Today",
+    "description": "A simple expectation unmet, this card represents a minor disruption or a sudden, unexpected lack of something ordinary. It speaks to small disappointments, changes in routine, or the feeling of being caught slightly off guard by the absence of something familiar."
+  },
+  "take_me_out": {
+    "title": "Take Me Out",
+    "description": "A call to step out of the ordinary and into the world. This card embodies the desire for engagement, excitement, or a change of environment. It can represent an invitation to participate, a push to be seen, or the urge to break free from routine."
+  },
+  "aint_no_mountain_high_enough": {
+    "title": "Ain't No Mountain High Enough",
+    "description": "No obstacle is too great for this connection. This card embodies fierce dedication and the willingness to overcome any challenge to reach someone or achieve a shared goal. It speaks to the power of devotion and a bond that is stronger than any physical or emotional barrier."
+  },
+  "here_comes_the_sun": {
+    "title": "Here Comes The Sun",
+    "description": "After a period of darkness, light returns. This card embodies the arrival of hope, signaling the end of difficult times and the promise of brighter days. It brings a sense of relief, renewal, and the warmth of optimism after a challenging period."
+  },
+  "rockstar": {
+    "title": "Rockstar",
+    "description": "Living life in the fast lane, this card embodies the allure and potential pitfalls of fame and excess. It speaks to ambition, performance, and a lifestyle that is often public, wild, and pushes boundaries."
+  },
+  "renegades": {
+    "title": "Renegades",
+    "description": "Refusing to follow the beaten path, this card represents those who forge their own way. It embodies the spirit of rebellion, individuality, and the formation of bonds outside of traditional structures. It speaks to challenging the status quo and finding strength in being different."
+  },
+  "dream_on": {
+    "title": "Dream On",
+    "description": "Despite the challenges, the vision remains. This card is a message of encouragement, urging one to hold onto their dreams and continue striving towards them, even when the path is difficult. It speaks to resilience and the enduring power of hope."
+  },
+  "set_fire_to_the_rain": {
+    "title": "Set Fire To The Rain",
+    "description": "Emotions so powerful they defy the natural order, this card embodies a dramatic and intense release of feeling. It speaks to passion that is almost destructive, a cathartic expression that goes against reason or circumstance."
+  },
+  "uptown_girl": {
+    "title": "Uptown Girl",
+    "description": "Worlds collide in this encounter. This card highlights the differences and potential connections between individuals from contrasting social backgrounds. It speaks to aspiration, the allure of a different life, and the bridging of social divides."
+  },
+  "where_is_my_mind": {
+    "title": "Where Is My Mind? "
+  },
+  "take_me_to_church": {
+    "title": "Take Me To Church",
+    "description": "A powerful plea for transcendence or ultimate devotion. This card embodies intense passion, a search for sacred meaning, or a moment of complete surrender to a feeling or belief. It speaks to finding a place of profound emotional or spiritual significance."
+  },
+  "twist_in_my_sobriety": {
+    "title": "Twist In My Sobriety",
+    "description": "A sudden shift disrupts the expected state of mind. This card embodies a moment that alters perception, challenges stability, or introduces an unexpected change in how one sees the world or a situation. It speaks to a loss of control or a surprising turn."
+  },
+  "young_folks": {
+    "title": "Young Folks",
+    "description": "In the springtime of life, connections are made with ease. This card embodies the spirit of youth, simple interactions, and the beginning of new relationships or journeys. It speaks to carefree moments and the potential for growth and discovery together."
+  },
+  "boulevard_of_broken_dreams": {
+    "title": "Boulevard Of Broken Dreams",
+    "description": "A road walked alone, lined with the echoes of what could have been. This card embodies the feeling of navigating a path where hopes have faded and dreams remain out of reach. It speaks to solitude, introspection, and the quiet melancholy of unfulfilled potential."
+  },
+  "down_on_the_corner": {
+    "title": "Down On The Corner",
+    "description": "Where the rhythm of the street provides the soundtrack to simple joys. This card embodies the spirit of community found in everyday places, highlighting shared moments, impromptu gatherings, and the simple pleasures of connection."
+  },
+  "money_money_money": {
+    "title": "Money Money Money",
+    "description": "A relentless pursuit of fortune, this card embodies the focus on material wealth and the ambitions driven by financial desires. It speaks to the power and influence of money, and the potential consequences, both positive and negative, that come with its pursuit."
+  },
+  "dunyanin_en_guzel_kizi": {
+    "title": "Dünyanın En Güzel Kızı"
+  }
 }
