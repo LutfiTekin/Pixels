@@ -1,5 +1,5 @@
 {
-   "97287b93b3dab8a2": {
+  "97287b93b3dab8a2": {
     "title": "1. Lady of the First Flame",
     "description": "Base design"
   },
@@ -34,7 +34,6 @@
     "title": "9. Hanimefendi with Candle and Flame",
     "description": "Ottoman Flavor"
   },
-  
   "a9f521d765fb4320": {
     "title": "10. Pinup"
   },
@@ -42,7 +41,7 @@
     "title": "11. Elven Flame in Moonlit Forest",
     "description": "LotR Elvish Card Design"
   },
- "335a88bebaf33fdf": {
+  "335a88bebaf33fdf": {
     "title": "12. Mystical Guardian of the Flame",
     "description": "But they were, all of them, deceived. For another card was made..."
   },
@@ -57,5 +56,9 @@
   "a0c6c78d848aca26": {
     "title": "15. Lady of the First Flame",
     "description": "Soviet Propaganda poster/Cold War aesthetics"
+  },
+  "2d8bcf630ff2cf31": {
+    "title": "16. The Bandit Pair",
+    "description": "Wild West Wanted poster flavor"
   }
 }
