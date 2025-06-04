@@ -86,9 +86,15 @@ jq --arg id "$album_id" --argjson imgs "$lookup_imgs" '. + {($id): $imgs}' "$loo
   && mv "${lookup_file}.tmp" "$lookup_file"
 
 echo "✅ Added new images to album '$album_id': [${new_album_images[*]}]"
-echo "🔄 Regenerating thumbnails…"
-
-# ── Run generate_thumbnails.sh ────────────────────────────────────────
-"$script_dir/generate_thumbnails.sh"
+read -p "Run generate_thumbnails.sh now? [y/N]: " yn
+case "$yn" in
+    [Yy]* ) 
+        "$script_dir/generate_thumbnails.sh"
+        echo "🎉 Done."
+        ;;
+    * )
+        echo "Skipped thumbnail generation."
+        ;;
+esac
 
 echo "🎉 Done."
