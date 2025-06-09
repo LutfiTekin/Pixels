@@ -57,10 +57,6 @@
     "title": "15. Lady of the First Flame",
     "description": "Soviet Propaganda poster/Cold War aesthetics"
   },
-  "2d8bcf630ff2cf31": {
-    "title": "16. The Bandit Pair",
-    "description": "Wild West Wanted poster flavor"
-  },
   "304d82834f577b35": {
     "title": "17. CODENAME  IGNIS Ignites the Flame",
     "description": "WWII-Gazette inspired design"
@@ -102,7 +98,8 @@
     "description": "Industrial Revolution Theme"
   },
   "b5fbdd25eec0083a": {
-    "title": "Ancient Greece Lady of the First Flame"
+    "title": "16. Ancient Greece Lady of the First Flame",
+    "description" : "Ancient Greece flavor"
   },
   "e572b6639f71c12d": {
     "title": "Chinese The Lady Who Lights the Lamp"
